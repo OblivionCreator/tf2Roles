@@ -141,16 +141,14 @@ async def listall(inter):
     cur.execute(sql)
 
     items = cur.fetchall()
-    print(items)
     allRoles = []
     allIcons = []
 
     for i in items:
         usr, temp1, temp2 = i
-        print(usr)
         member = await inter.guild.get_or_fetch_member(usr)
         if member is None:
-            print(usr, member)
+            pass
         else:
             temp1 = json.loads(temp1)
             temp2 = json.loads(temp2)
@@ -202,8 +200,6 @@ async def listall(inter):
     embed2.set_footer(text='NOTE: This only counts role icons used by members still in the server.')
 
     await inter.response.send_message(embeds=[embed, embed2])
-    print(roleCount)
-    print(iconCount)
 
 
 @bot.slash_command(name='dongulate', description='Adds all valid roles to a user.', guild_ids=guilds)
@@ -281,7 +277,6 @@ async def on_role_select(inter):
         raw_id = inter.data.values[0]
         role_id = int(raw_id[3:])
         type = raw_id[:2]
-        print(role_id, type)
 
         if type == 'ro':
             type = 'role'
@@ -352,9 +347,7 @@ def get_user_roles(user, skip=False):
     cur.execute(sql, [user])  # Gets all roles & role icons from the user.
 
     item = cur.fetchone()
-    if item:
-        print(f'Found {item}')
-    else:
+    if not item:
         add_user_to_database(user)
         return get_user_roles(user)
 
