@@ -83,6 +83,12 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
     if role.name == '@everyone':
         await inter.response.send_message("You can not assign the role @everyone!", ephemeral=True)
         return
+
+    bl_role, trash = get_user_roles(9)
+    if role.id in bl_role:
+        await inter.response.send_message(f"{role.mention} is in the blacklist and may not be given out!\nThis request has been logged.", ephemeral=True)
+        return
+
     await inter.response.send_message(f"{member.mention} has been assigned the role {role.mention}!")
     database_update("add", user=member.id, role=role.id)
 
@@ -104,6 +110,12 @@ async def addroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role):
     if role.name == '@everyone':
         await inter.response.send_message("You can not assign the role @everyone!", ephemeral=True)
         return
+
+    trash, bl_role = get_user_roles(9)
+    if role.id in bl_role:
+        await inter.response.send_message(f"{role.mention} is in the blacklist and may not be given out!\nThis request has been logged.", ephemeral=True)
+        return
+
     await inter.response.send_message(f"{member.mention} has been assigned the role icon {role.mention}!")
     database_update("add", user=member.id, roleIcon=role.id)
 
@@ -195,6 +207,7 @@ async def listall(inter):
 
 
 @bot.slash_command(name='dongulate', description='Adds all valid roles to a user.', guild_ids=guilds)
+@commands.has_permissions(manage_roles=True)
 async def dongulate(inter, user: disnake.User):
     roleIDs, roleIconIDs = get_user_roles(0)
     roles_to_add = []
@@ -213,9 +226,32 @@ async def dongulate(inter, user: disnake.User):
     await user.remove_roles(*roleIcons_to_add, reason='All valid role icons added to user inventory.')
     await inter.response.send_message(f"All valid roles have been assigned to {user.mention}")
 
+@bot.slash_command(name='blacklist', description='Adds a role to the blacklist, forbidding it from being assigned.', guild_ids=guilds)
+@commands.has_permissions(manage_roles=True)
+async def blacklist(inter, role: disnake.Role):
+    roleIDs, roleIconIDs = get_user_roles(9)
+    roleA, roleIconA = get_user_roles(0)
+    if role.id in roleIDs or role.id in roleIconIDs:
+        database_update('remove', 9, role=role.id)
+        await inter.response.send_message(content=f"{role.name} has been removed from the Blacklisted Roles", ephemeral=True)
+    else:
+        database_update('add', 9, role=role.id)
+        await inter.response.send_message(f"{role.name} has been added to the Blacklisted Roles", ephemeral=True)
+        if role.id in roleA:
+            database_update("remove", 0, role=role.id)
+        elif role.id in roleIconA:
+            database_update("remove", 0, role=role.id)
+
 @bot.slash_command(name='assignrole', description='Adds or removes a role from the Dongulatable roles.', guild_ids=guilds)
+@commands.has_permissions(manage_roles=True)
 async def assign_role(inter, role: disnake.Role):
     roleIDs, trash = get_user_roles(0)
+    bl_r, trash = get_user_roles(9)
+    if role.id in bl_r:
+        await inter.response.send_message(content=f"{role.name} is blacklisted and may not be assigned.",
+                                          ephemeral=True)
+        return
+
     if role.id in roleIDs:
         database_update('remove', 0, role=role.id)
         await inter.response.send_message(content=f"{role.name} has been removed from the Dongulatable Roles", ephemeral=True)
@@ -224,8 +260,14 @@ async def assign_role(inter, role: disnake.Role):
         await inter.response.send_message(f"{role.name} has been added to the Dongulatable Roles", ephemeral=True)
 
 @bot.slash_command(name='assignroleicon', description='Adds or removes a role from the Dongulatable roles.', guild_ids=guilds)
+@commands.has_permissions(manage_roles=True)
 async def assign_role_icon(inter, role:disnake.Role):
     trash, roleIconIDs = get_user_roles(0)
+    bl_r, trash = get_user_roles(9)
+    if role.id in bl_r:
+        await inter.response.send_message(content=f"{role.name} is blacklisted and may not be assigned.",
+                                          ephemeral=True)
+        return
     if role.id in roleIconIDs:
         database_update('remove', 0, roleIcon=role.id)
         await inter.response.send_message(content=f"{role.name} has been removed from the Dongulatable Role Icons", ephemeral=True)
@@ -270,8 +312,17 @@ async def on_role_select(inter):
                                                               color=0x0e0e0e), ephemeral=True)
         return
 
-    await member.remove_roles(*roleList, reason=f'Role Assignment by {member.name}')
-    await member.add_roles(role, reason=f'Role Assignment by {member.name}')
+    try:
+        await member.remove_roles(*roleList, reason=f'Role Assignment by {member.name}')
+    except disnake.Forbidden as e:
+        await inter.response.send_message("The bot encountered an error removing your existing roles. This is likely due to the bot not having permissions to remove a role in your inventory.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.", ephemeral=True)
+        return
+
+    try:
+        await member.add_roles(role, reason=f'Role Assignment by {member.name}')
+    except disnake.Forbidden as e:
+        await inter.response.send_message("The bot encountered an error assigning you the role. This is likely due to the bot having incorrect permissions to assign the role requested.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.", ephemeral=True)
+        return
 
     embed = disnake.Embed(title='Role Selected',
                           description=f'You have equipped the role {role.mention} from your inventory.',
@@ -290,7 +341,10 @@ def add_user_to_database(user):
     conn.commit()
 
 
-def get_user_roles(user):
+def get_user_roles(user, skip=False):
+    if user == 9:
+        skip=True
+
     conn = sqlite3.connect('roles.db')
     cur = conn.cursor()
 
@@ -309,17 +363,43 @@ def get_user_roles(user):
     roles_str, roleIcons_str = item
     roles, roleIcons = json.loads(roles_str), json.loads(roleIcons_str)
 
+    if not skip:
+        bl, trash = get_user_roles(9)
+
+        for i in roles:
+            if i in bl:
+                database_update('remove', user, role=i)
+                roles.remove(i)
+        for ix in roleIcons:
+            if ix in blacklist:
+                database_update('remove', user, role=ix)
+                roleIcons.remove(ix)
+
+        bl, trash = get_user_roles(9, skip=True)
+        to_blacklist = False
+        for i in roles:
+            if i in bl:
+                to_blacklist = True
+        for ix in roleIcons:
+            if ix in bl:
+                to_blacklist = True
+
+        if to_blacklist:
+            database_update("none", user)
+
+
     return roles, roleIcons
 
 
 def database_update(action, user, role=None, roleIcon=None):
+
     conn = sqlite3.connect('roles.db')
     cur = conn.cursor()
 
     sql = '''SELECT role, roleicon FROM roles WHERE user IS ?'''
     cur.execute(sql, [user])  # Gets all roles & role icons from the user.
 
-    roles, roleIcons = get_user_roles(user)
+    roles, roleIcons = get_user_roles(user, skip=True)
 
     if action == 'add':
         if role in roles or roleIcon in roleIcons:
