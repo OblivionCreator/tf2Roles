@@ -310,16 +310,17 @@ async def on_role_select(inter):
                                                               color=0x0e0e0e), ephemeral=True)
         return
 
-    try:
-        await member.remove_roles(*roleList, reason=f'Role Assignment by {member.name}')
-    except disnake.Forbidden as e:
-        await inter.response.send_message("The bot encountered an error removing your existing roles. This is likely due to the bot not having permissions to remove a role in your inventory.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.", ephemeral=True)
-        return
 
     try:
         await member.add_roles(role, reason=f'Role Assignment by {member.name}')
     except disnake.Forbidden as e:
         await inter.response.send_message("The bot encountered an error assigning you the role. This is likely due to the bot having incorrect permissions to assign the role requested.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.", ephemeral=True)
+        return
+
+    try:
+        await member.remove_roles(*roleList, reason=f'Role Assignment by {member.name}')
+    except disnake.Forbidden as e:
+        await inter.response.send_message("The bot encountered an error removing your existing roles. This is likely due to the bot not having permissions to remove a role in your inventory.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.", ephemeral=True)
         return
 
     embed = disnake.Embed(title='Role Selected',
