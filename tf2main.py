@@ -16,7 +16,8 @@ bot = commands.Bot(command_prefix='unused lol', intents=intents,
 guilds = [770428394918641694, 296802696243970049]
 rarities = ['Unique', 'Strange', 'Unusual', 'Collector\'s', 'Vintage', 'Normal', 'Decorated', 'Self-Made', 'VALVE',
             'noun', 'Community', 'Haunted', 'Genuine', 'Untradable', 'Uncraftable', 'Common', 'Mythic', 'Rare',
-            'LEGENDARY', 'Uncued', 'Bliv']
+            'LEGENDARY', 'Uncued', 'Bliv', 'Cringe', 'Battleworn', 'Smokin\'' 'Smelly', 'Suspicious', 'DCUR', 'Medically Trained',
+            'Dongulated', 'Peer Reviewed', 'Verified', 'Non-Canon']
 
 
 @bot.slash_command(description='View and Equip Roles from your Role Inventory', name='roles', guild_ids=guilds)
