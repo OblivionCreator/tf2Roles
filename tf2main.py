@@ -364,7 +364,7 @@ def get_user_roles(user, skip=False):
                 database_update('remove', user, role=i)
                 roles.remove(i)
         for ix in roleIcons:
-            if ix in blacklist:
+            if ix in bl:
                 database_update('remove', user, role=ix)
                 roleIcons.remove(ix)
 
@@ -422,7 +422,7 @@ def database_update(action, user, role=None, roleIcon=None):
     conn.commit()
 
 
-@bot.listen()
+#@bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send("You do not have permission to use this command!", ephemeral=True)
