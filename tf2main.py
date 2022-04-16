@@ -173,6 +173,9 @@ async def listall(inter):
     roleCount = sorted(roleCount.items(), key=operator.itemgetter(1), reverse=True)
     iconCount = sorted(iconCount.items(), key=operator.itemgetter(1), reverse=True)
 
+    color = 0x000000
+    color2 = 0x000000
+
     roleStr = ''
     roleIconStr = ''
     roleClr = False
