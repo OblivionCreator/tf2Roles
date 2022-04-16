@@ -118,6 +118,7 @@ async def removeroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role
     database_update("remove", user=member.id, roleIcon=role.id)
     await member.remove_roles(role, reason=f'Role removed by {inter.author} ({inter.author.id})')
 
+
 @bot.slash_command(description='Shows All Role Assignments', name='listroles', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def listall(inter):
@@ -159,8 +160,8 @@ async def listall(inter):
             iconCount[ri] = 0
         iconCount[ri] += 1
 
-    roleCount = sorted(roleCount.items(), key=operator.itemgetter(1),reverse=True)
-    iconCount = sorted(iconCount.items(), key=operator.itemgetter(1),reverse=True)
+    roleCount = sorted(roleCount.items(), key=operator.itemgetter(1), reverse=True)
+    iconCount = sorted(iconCount.items(), key=operator.itemgetter(1), reverse=True)
 
     roleStr = ''
     roleIconStr = ''
@@ -181,8 +182,6 @@ async def listall(inter):
             color2 = temprole.color
             roleClr = True
 
-
-
     embed = disnake.Embed(title="Here are all the roles currently in use!", description=roleStr)
     embed.color = color
     embed.set_footer(text='NOTE: This only counts roles used by members still in the server.')
@@ -195,6 +194,44 @@ async def listall(inter):
     print(iconCount)
 
 
+@bot.slash_command(name='dongulate', description='Adds all valid roles to a user.', guild_ids=guilds)
+async def dongulate(inter, user: disnake.User):
+    roleIDs, roleIconIDs = get_user_roles(0)
+    roles_to_add = []
+    roleIcons_to_add = []
+
+    for r in user.roles:
+        if r.id in roleIDs:
+            roles_to_add.append(r)
+            database_update('add', user.id, role=r.id)
+        if r.id in roleIconIDs:
+            roleIcons_to_add.append(r)
+            database_update('add', user.id, roleIcon=r.id)
+
+
+    await user.remove_roles(*roles_to_add, reason='All valid roles added to user inventory.')
+    await user.remove_roles(*roleIcons_to_add, reason='All valid role icons added to user inventory.')
+    await inter.response.send_message(f"All valid roles have been assigned to {user.mention}")
+
+@bot.slash_command(name='assignrole', description='Adds or removes a role from the Dongulatable roles.', guild_ids=guilds)
+async def assign_role(inter, role: disnake.Role):
+    roleIDs, trash = get_user_roles(0)
+    if role.id in roleIDs:
+        database_update('remove', 0, role=role.id)
+        await inter.response.send_message(content=f"{role.name} has been removed from the Dongulatable Roles", ephemeral=True)
+    else:
+        database_update('add', 0, role=role.id)
+        await inter.response.send_message(f"{role.name} has been added to the Dongulatable Roles", ephemeral=True)
+
+@bot.slash_command(name='assignroleicon', description='Adds or removes a role from the Dongulatable roles.', guild_ids=guilds)
+async def assign_role_icon(inter, role:disnake.Role):
+    trash, roleIconIDs = get_user_roles(0)
+    if role.id in roleIconIDs:
+        database_update('remove', 0, roleIcon=role.id)
+        await inter.response.send_message(content=f"{role.name} has been removed from the Dongulatable Role Icons", ephemeral=True)
+    else:
+        database_update('add', 0, roleIcon=role.id)
+        await inter.response.send_message(f"{role.name} has been added to the Dongulatable Role Icons", ephemeral=True)
 
 @bot.listen("on_dropdown")
 async def on_role_select(inter):
@@ -265,13 +302,15 @@ def get_user_roles(user):
         print(f'Found {item}')
     else:
         add_user_to_database(user)
-        get_user_roles(user)
+        return get_user_roles(user)
+
 
     # user_roles = json.load()
     roles_str, roleIcons_str = item
     roles, roleIcons = json.loads(roles_str), json.loads(roleIcons_str)
 
     return roles, roleIcons
+
 
 def database_update(action, user, role=None, roleIcon=None):
     conn = sqlite3.connect('roles.db')
@@ -309,13 +348,16 @@ def database_update(action, user, role=None, roleIcon=None):
     cur.execute(sql3, [json.dumps(roleIcons), user])
     conn.commit()
 
+
 @bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send("You do not have permission to use this command!", ephemeral=True)
         return
 
-    await ctx.send(f"Unknown Error:\n{error}\nPlease contact OblivionCreator#9905 for assistance or report an issue on the GitHub page at https://bliv.red/rolermobster")
+    await ctx.send(
+        f"Unknown Error:\n{error}\nPlease contact OblivionCreator#9905 for assistance or report an issue on the GitHub page at https://bliv.red/rolermobster")
     print(error)
+
 
 bot.run(open('token.txt', 'r').read())
