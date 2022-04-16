@@ -1,11 +1,16 @@
 import json
+import operator
 import sqlite3
 import random
+from collections import Counter
 
 import disnake
 from disnake.ext import commands
 
 intents = disnake.Intents.default()
+intents.guilds = True
+intents.presences = True
+
 bot = commands.Bot(command_prefix='unused lol', intents=intents,
                    allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
 guilds = [770428394918641694]
@@ -113,6 +118,83 @@ async def removeroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role
     database_update("remove", user=member.id, roleIcon=role.id)
     await member.remove_roles(role, reason=f'Role removed by {inter.author} ({inter.author.id})')
 
+@bot.slash_command(description='Shows All Role Assignments', name='listroles', guild_ids=guilds)
+@commands.has_permissions(manage_roles=True)
+async def listall(inter):
+    conn = sqlite3.connect('roles.db')
+    cur = conn.cursor()
+
+    sql = '''SELECT * FROM roles'''
+    cur.execute(sql)
+
+    items = cur.fetchall()
+    print(items)
+    allRoles = []
+    allIcons = []
+
+    for i in items:
+        usr, temp1, temp2 = i
+        print(usr)
+        member = await inter.guild.get_or_fetch_member(usr)
+        if member is None:
+            print(usr, member)
+        else:
+            temp1 = json.loads(temp1)
+            temp2 = json.loads(temp2)
+            for t1 in temp1:
+                allRoles.append(t1)
+            for t2 in temp2:
+                allIcons.append(t2)
+
+    roleCount = {}
+    iconCount = {}
+
+    for rl in allRoles:
+        if rl not in roleCount:
+            roleCount[rl] = 0
+        roleCount[rl] += 1
+
+    for ri in allIcons:
+        if ri not in iconCount:
+            iconCount[ri] = 0
+        iconCount[ri] += 1
+
+    roleCount = sorted(roleCount.items(), key=operator.itemgetter(1),reverse=True)
+    iconCount = sorted(iconCount.items(), key=operator.itemgetter(1),reverse=True)
+
+    roleStr = ''
+    roleIconStr = ''
+    roleClr = False
+    for i in roleCount:
+        temprole = inter.guild.get_role(i[0])
+        roleStr = f'{roleStr}\n{temprole.mention}: **{i[1]}**'
+        if not roleClr:
+            color = temprole.color
+            roleClr = True
+
+    roleClr = False
+
+    for i in iconCount:
+        temprole = inter.guild.get_role(i[0])
+        roleIconStr = f'{roleIconStr}\n{inter.guild.get_role(i[0]).mention}: **{i[1]}**'
+        if not roleClr:
+            color2 = temprole.color
+            roleClr = True
+
+
+
+    embed = disnake.Embed(title="Here are all the roles currently in use!", description=roleStr)
+    embed.color = color
+    embed.set_footer(text='NOTE: This only counts roles used by members still in the server.')
+    embed2 = disnake.Embed(title="Here are all the roles currently in use!", description=roleIconStr)
+    embed2.color = color2
+    embed2.set_footer(text='NOTE: This only counts role icons used by members still in the server.')
+
+    await inter.response.send_message(embeds=[embed, embed2])
+    print(roleCount)
+    print(iconCount)
+
+
 
 @bot.listen("on_dropdown")
 async def on_role_select(inter):
@@ -190,7 +272,6 @@ def get_user_roles(user):
     roles, roleIcons = json.loads(roles_str), json.loads(roleIcons_str)
 
     return roles, roleIcons
-
 
 def database_update(action, user, role=None, roleIcon=None):
     conn = sqlite3.connect('roles.db')
