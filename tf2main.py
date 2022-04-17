@@ -30,7 +30,11 @@ async def roles(inter):
 
 
 async def _roles(inter, type, isBlacklist=False):  # Lists a players' roles & role icons and allows them to choose between them.
-    roles, roleIcons = get_user_roles(inter.author.id)
+    if isBlacklist:
+        id = 9
+    else:
+        id = inter.author.id
+    roles, roleIcons = get_user_roles(id)
     guild = inter.guild
 
     true_items = []
