@@ -15,7 +15,7 @@ bot = commands.Bot(command_prefix='unused lol', intents=intents,
                    allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
 guilds = [770428394918641694, 296802696243970049]
 rarities = ['Unique', 'Strange', 'Unusual', 'Collector\'s', 'Vintage', 'Normal', 'Decorated', 'Self-Made', 'VALVE',
-            'noun', 'Community', 'Haunted', 'Genuine', 'Untradable', 'Uncraftable', 'Common', 'Mythic', 'Rare',
+            'noun', 'Community', 'Haunted', 'Genuine', 'Untradeable', 'Uncraftable', 'Common', 'Mythic', 'Rare',
             'LEGENDARY', 'Uncued', 'Bliv']
 
 
@@ -29,7 +29,7 @@ async def roles(inter):
     await _roles(inter, type='Role Icon')
 
 
-async def _roles(inter, type):  # Lists a players' roles & role icons and allows them to choose between them.
+async def _roles(inter, type, isBlacklist=False):  # Lists a players' roles & role icons and allows them to choose between them.
     roles, roleIcons = get_user_roles(inter.author.id)
     guild = inter.guild
 
@@ -54,8 +54,9 @@ async def _roles(inter, type):  # Lists a players' roles & role icons and allows
     options = []
     for r in true_items:
         quality = random.choice(rarities)
+        level = random.randint(0, 100)
         temp = disnake.SelectOption(label=r.name, value=f'{shortType}_{r.id}',
-                                    description=f'Level {random.randint(0, 100)} {quality} Quality {r.name}!')
+                                    description=f'Level {level} {quality} Quality {r.name}!')
         options.append(temp)
     Menu.options = options
     Menu.custom_id = 'role_select'
@@ -65,14 +66,17 @@ async def _roles(inter, type):  # Lists a players' roles & role icons and allows
     for i in true_items:
         roleStrList = f'{i.mention}\n{roleStrList}'
     embed = disnake.Embed(
-        title=f'You currently own {len(true_items)} {type}{"s" if len(true_items) != 1 else ""}{":" if len(true_items) > 0 else "."}',
+        title=f'{"There are currently"if isBlacklist else "You currently own"} {len(true_items)}{" Blacklisted" if isBlacklist else ""} {type}{"s" if len(true_items) != 1 else ""}{":" if len(true_items) > 0 else "."}',
         description=roleStrList, color=0xD8B400)
-    embed.set_footer(text=f"{type} are awarded for specific achivements. Use <command here> for more information.")
+    if not isBlacklist:
+        embed.set_footer(text=f"{type}s are awarded for specific achivements. Use <command here> for more information.")
     if len(true_items) != 0:
         embed.set_footer(text=f'You can select a {type.lower()} to equip using the drop down menu below.')
 
-    if len(true_items) > 0:
+    if len(true_items) > 0 or not isBlacklist:
         message = await inter.response.send_message(components=[Menu], embed=embed, ephemeral=True)
+    elif isBlacklist:
+        return embed
     else:
         message = await inter.response.send_message(embed=embed, ephemeral=True)
 
@@ -257,6 +261,13 @@ async def assign_role(inter, role: disnake.Role):
     else:
         database_update('add', 0, role=role.id)
         await inter.response.send_message(f"{role.name} has been added to the Dongulatable Roles", ephemeral=True)
+
+@bot.slash_command(name='viewblacklist', description='Lists all blacklisted roles and role icons.', guild_ids=guilds)
+@commands.has_permissions(manage_roles=True)
+async def vw_bl(inter):
+    embed1 = await _roles(inter, 'Role', isBlacklist = True)
+    embed2 = await _roles(inter, 'RoleIcon', isBlacklist = True)
+    await inter.response.send_message(embeds=[embed1,embed2])
 
 @bot.slash_command(name='assignroleicon', description='Adds or removes a role from the Dongulatable roles.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
