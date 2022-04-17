@@ -100,7 +100,7 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
         await inter.response.send_message(f"{role.mention} is in the blacklist and may not be given out!\nThis request has been logged.", ephemeral=True)
         return
 
-    await inter.response.send_message(f"{member.mention} has been assigned the role {role.mention}!")
+    await inter.response.send_message(f"{member.mention} has been given the role {role.mention}!\nYou can equip your new role by doing `/roles`.")
     database_update("add", user=member.id, role=role.id)
 
 
