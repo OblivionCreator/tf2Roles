@@ -65,6 +65,8 @@ async def _roles(inter, type, isBlacklist=False):  # Lists a players' roles & ro
             options.append(temp)
         Menu.options = options
         Menu.custom_id = 'role_select'
+    else:
+        Menu = None
 
     roleStrList = ''
 
@@ -78,10 +80,10 @@ async def _roles(inter, type, isBlacklist=False):  # Lists a players' roles & ro
     if len(true_items) != 0:
         embed.set_footer(text=f'You can select a {type.lower()} to equip using the drop down menu below.')
 
+    if isBlacklist:
+        return embed
     if len(true_items) > 0 or not isBlacklist:
         message = await inter.response.send_message(components=[Menu], embed=embed, ephemeral=True)
-    elif isBlacklist:
-        return embed
     else:
         message = await inter.response.send_message(embed=embed, ephemeral=True)
 
