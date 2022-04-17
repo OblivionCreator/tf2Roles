@@ -77,12 +77,12 @@ async def _roles(inter, type, isBlacklist=False):  # Lists a players' roles & ro
         description=roleStrList, color=0xD8B400)
     if not isBlacklist:
         embed.set_footer(text=f"{type}s are awarded for specific achivements. Use <command here> for more information.")
-    if len(true_items) != 0:
+    if len(true_items) != 0 and not isBlacklist:
         embed.set_footer(text=f'You can select a {type.lower()} to equip using the drop down menu below.')
 
     if isBlacklist:
         return embed
-    if len(true_items) > 0 or not isBlacklist:
+    elif len(true_items) > 0:
         message = await inter.response.send_message(components=[Menu], embed=embed, ephemeral=True)
     else:
         message = await inter.response.send_message(embed=embed, ephemeral=True)
@@ -444,7 +444,7 @@ def database_update(action, user, role=None, roleIcon=None):
     conn.commit()
 
 
-@bot.listen()
+#@bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send("You do not have permission to use this command!", ephemeral=True)
