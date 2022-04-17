@@ -54,16 +54,17 @@ async def _roles(inter, type, isBlacklist=False):  # Lists a players' roles & ro
         except Exception as e:
             print(e)
 
-    Menu = disnake.ui.Select()
-    options = []
-    for r in true_items:
-        quality = random.choice(rarities)
-        level = random.randint(0, 100)
-        temp = disnake.SelectOption(label=r.name, value=f'{shortType}_{r.id}',
-                                    description=f'Level {level} {quality} Quality {r.name}!')
-        options.append(temp)
-    Menu.options = options
-    Menu.custom_id = 'role_select'
+    if not isBlacklist:
+        Menu = disnake.ui.Select()
+        options = []
+        for r in true_items:
+            quality = random.choice(rarities)
+            level = random.randint(0, 100)
+            temp = disnake.SelectOption(label=r.name, value=f'{shortType}_{r.id}',
+                                        description=f'Level {level} {quality} Quality {r.name}!')
+            options.append(temp)
+        Menu.options = options
+        Menu.custom_id = 'role_select'
 
     roleStrList = ''
 
