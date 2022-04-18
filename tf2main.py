@@ -297,11 +297,6 @@ async def assign_role_icon(inter, role:disnake.Role):
 @bot.listen("on_dropdown")
 async def on_role_select(inter):
 
-    try:
-        asyncio.create_task(inter.response.defer())
-    except disnake.InteractionResponded:
-        pass
-
     if inter.data.custom_id == 'role_select':
         raw_id = inter.data.values[0]
         role_id = int(raw_id[3:])
@@ -340,7 +335,7 @@ async def on_role_select(inter):
     try:
         await member.add_roles(role, reason=f'Role Assignment by {member.name}')
     except disnake.Forbidden as e:
-        await inter.send("The bot encountered an error assigning you the role. This is likely due to the bot having incorrect permissions to assign the role requested.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.", ephemeral=True)
+        await inter.response.send_message("The bot encountered an error assigning you the role. This is likely due to the bot having incorrect permissions to assign the role requested.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.", ephemeral=True)
         return
 
     try:
@@ -352,7 +347,7 @@ async def on_role_select(inter):
     embed = disnake.Embed(title='Role Selected',
                           description=f'You have equipped the role {role.mention} from your inventory.',
                           color=role.color)
-    await inter.send(embed=embed, ephemeral=True)
+    await inter.response.send_message(embed=embed, ephemeral=True)
 
 
 def add_user_to_database(user):
