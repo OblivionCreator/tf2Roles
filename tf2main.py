@@ -34,8 +34,10 @@ async def _roles(inter, type, isBlacklist=False):  # Lists a players' roles & ro
         id = 9
     else:
         id = inter.author.id
+        await inter.response.defer(ephemeral=True)
     roles, roleIcons = get_user_roles(id)
     guild = inter.guild
+
 
     true_items = []
 
@@ -83,9 +85,9 @@ async def _roles(inter, type, isBlacklist=False):  # Lists a players' roles & ro
     if isBlacklist:
         return embed
     elif len(true_items) > 0:
-        message = await inter.response.send_message(components=[Menu], embed=embed, ephemeral=True)
+        message = await inter.edit_original_message(components=[Menu], embed=embed)
     else:
-        message = await inter.response.send_message(embed=embed, ephemeral=True)
+        message = await inter.edit_original_message(embed=embed)
 
 
 @bot.slash_command(description='Assigns a role to a user.', name='giverole', guild_ids=guilds)
@@ -272,9 +274,10 @@ async def assign_role(inter, role: disnake.Role):
 @bot.slash_command(name='viewblacklist', description='Lists all blacklisted roles and role icons.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def vw_bl(inter):
+    await inter.response.defer()
     embed1 = await _roles(inter, 'Role', isBlacklist = True)
     embed2 = await _roles(inter, 'RoleIcon', isBlacklist = True)
-    await inter.response.send_message(embeds=[embed1,embed2])
+    await inter.edit_original_message(embeds=[embed1,embed2])
 
 @bot.slash_command(name='assignroleicon', description='Adds or removes a role from the Dongulatable roles.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
@@ -294,6 +297,7 @@ async def assign_role_icon(inter, role:disnake.Role):
 
 @bot.listen("on_dropdown")
 async def on_role_select(inter):
+    await inter.response.defer()
     if inter.data.custom_id == 'role_select':
         raw_id = inter.data.values[0]
         role_id = int(raw_id[3:])
@@ -323,7 +327,7 @@ async def on_role_select(inter):
     try:
         roleList.remove(role)
     except Exception as e:
-        await inter.response.send_message(embed=disnake.Embed(title="Invalid Role",
+        await inter.send(embed=disnake.Embed(title="Invalid Role",
                                                               description="The role you selected either does not exist or has been removed from your inventory.",
                                                               color=0x0e0e0e), ephemeral=True)
         return
@@ -332,7 +336,7 @@ async def on_role_select(inter):
     try:
         await member.add_roles(role, reason=f'Role Assignment by {member.name}')
     except disnake.Forbidden as e:
-        await inter.response.send_message("The bot encountered an error assigning you the role. This is likely due to the bot having incorrect permissions to assign the role requested.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.", ephemeral=True)
+        await inter.send("The bot encountered an error assigning you the role. This is likely due to the bot having incorrect permissions to assign the role requested.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.", ephemeral=True)
         return
 
     try:
@@ -344,7 +348,7 @@ async def on_role_select(inter):
     embed = disnake.Embed(title='Role Selected',
                           description=f'You have equipped the role {role.mention} from your inventory.',
                           color=role.color)
-    await inter.response.send_message(embed=embed, ephemeral=True)
+    await inter.send(embed=embed, ephemeral=True)
 
 
 def add_user_to_database(user):
@@ -444,7 +448,7 @@ def database_update(action, user, role=None, roleIcon=None):
     conn.commit()
 
 
-@bot.listen()
+#@bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send("You do not have permission to use this command!", ephemeral=True)
