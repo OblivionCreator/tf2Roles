@@ -2,8 +2,7 @@ import json
 import operator
 import sqlite3
 import random
-from collections import Counter
-
+import asyncio
 import disnake
 from disnake.ext import commands
 
@@ -146,7 +145,7 @@ async def removeroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role
 
 @bot.slash_command(description='Shows All Role Assignments', name='listroles', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
-async def listall(inter):
+async def listall(inter, role:disnake.Role=None):
     conn = sqlite3.connect('roles.db')
     cur = conn.cursor()
 
@@ -297,7 +296,12 @@ async def assign_role_icon(inter, role:disnake.Role):
 
 @bot.listen("on_dropdown")
 async def on_role_select(inter):
-    await inter.response.defer()
+
+    try:
+        asyncio.create_task(inter.response.defer())
+    except disnake.InteractionResponded:
+        pass
+
     if inter.data.custom_id == 'role_select':
         raw_id = inter.data.values[0]
         role_id = int(raw_id[3:])
