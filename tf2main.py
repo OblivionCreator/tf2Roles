@@ -230,7 +230,7 @@ async def list_specific_role(inter, role):
 
     roleID = role.id
 
-    sql = f'''SELECT * FROM roles WHERE role OR roleicon LIKE '%{roleID}%' '''
+    sql = f'''SELECT * FROM roles WHERE role LIKE '%{roleID}%' OR roleicon LIKE '%{roleID}%' '''
     cur.execute(sql)
 
     items = cur.fetchall()
