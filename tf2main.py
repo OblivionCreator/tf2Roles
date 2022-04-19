@@ -246,8 +246,8 @@ async def list_specific_role(inter, role):
     if len(userList) > 0:
         for au in userList:
             allUserStr = f'{allUserStr}\n{au.mention}'
-            if userList.index(au) > 5:
-                allUserStr = f'{allUserStr}\n(+{len(userList)-userList.index(au)} More...'
+            if userList.index(au) > 175:
+                allUserStr = f'{allUserStr}\n(+{len(userList)-userList.index(au)} More...)'
                 break
     else:
         allUserStr = "Nobody has this role!"
