@@ -19,18 +19,21 @@ rarities = ['Unique', 'Strange', 'Unusual', 'Collector\'s', 'Vintage', 'Normal',
 
 
 @bot.slash_command(description='View and Equip Roles from your Role Inventory', name='roles', guild_ids=guilds)
-async def roles(inter):
-    await _roles(inter, type='Role')
+async def roles(inter, member:disnake.Member=None):
+    await _roles(inter, type='Role', user=member)
 
 
 @bot.slash_command(description='View and Equip Roles from your Role Icon Inventory', name='roleicons', guild_ids=guilds)
-async def roles(inter):
-    await _roles(inter, type='Role Icon')
+async def roleicons(inter, member:disnake.Member=None):
+    await _roles(inter, type='Role Icon', user=member)
 
 
-async def _roles(inter, type, isBlacklist=False):  # Lists a players' roles & role icons and allows them to choose between them.
+async def _roles(inter, type, isBlacklist=False, user=False):  # Lists a players' roles & role icons and allows them to choose between them.
     if isBlacklist:
         id = 9
+    elif user:
+        id = user.id
+        await inter.response.defer(ephemeral=True)
     else:
         id = inter.author.id
         await inter.response.defer(ephemeral=True)
@@ -55,7 +58,7 @@ async def _roles(inter, type, isBlacklist=False):  # Lists a players' roles & ro
         except Exception as e:
             print(e)
 
-    if not isBlacklist:
+    if not isBlacklist and not user:
         Menu = disnake.ui.Select()
         options = []
         for r in true_items:
@@ -74,16 +77,16 @@ async def _roles(inter, type, isBlacklist=False):  # Lists a players' roles & ro
     for i in true_items:
         roleStrList = f'{i.mention}\n{roleStrList}'
     embed = disnake.Embed(
-        title=f'{"There are currently"if isBlacklist else "You currently own"} {len(true_items)}{" Blacklisted" if isBlacklist else ""} {type}{"s" if len(true_items) != 1 else ""}{":" if len(true_items) > 0 else "."}',
+        title=f'{"There are currently"if isBlacklist else f"{user.name} currently has" if user else "You currently own"} {len(true_items)}{" Blacklisted" if isBlacklist else ""} {type}{"s" if len(true_items) != 1 else ""}{":" if len(true_items) > 0 else "."}',
         description=roleStrList, color=0xD8B400)
     if not isBlacklist:
         embed.set_footer(text=f"{type}s are awarded for specific achivements. Use <command here> for more information.")
-    if len(true_items) != 0 and not isBlacklist:
+    if len(true_items) != 0 and not isBlacklist and not user:
         embed.set_footer(text=f'You can select a {type.lower()} to equip using the drop down menu below.')
 
     if isBlacklist:
         return embed
-    elif len(true_items) > 0:
+    elif len(true_items) > 0 and not user:
         message = await inter.edit_original_message(components=[Menu], embed=embed)
     else:
         message = await inter.edit_original_message(embed=embed)
@@ -445,6 +448,7 @@ def database_update(action, user, role=None, roleIcon=None):
     sql3 = '''UPDATE roles SET roleicon = ? WHERE user IS ? '''
     cur.execute(sql3, [json.dumps(roleIcons), user])
     conn.commit()
+
 
 
 @bot.listen()
