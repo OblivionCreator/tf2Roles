@@ -234,7 +234,6 @@ async def list_specific_role(inter, role):
     cur.execute(sql)
 
     items = cur.fetchall()
-    print(items)
     userList = []
     if len(items) > 0:
         for i in items:
