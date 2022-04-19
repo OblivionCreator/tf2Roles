@@ -246,6 +246,8 @@ async def list_specific_role(inter, role):
     if len(userList) > 0:
         for au in userList:
             allUserStr = f'{allUserStr}\n{au.mention}'
+            if userList.index(au) > 5:
+                allUserStr = f'{allUserStr}\n(+{len(userList)-userList.index(au)} More...'
     else:
         allUserStr = "Nobody has this role!"
     embed = disnake.Embed(title=f'Everyone who has the Role {role.name}:', description=allUserStr, color=role.color)
