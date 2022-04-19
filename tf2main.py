@@ -18,28 +18,44 @@ rarities = ['Unique', 'Strange', 'Unusual', 'Collector\'s', 'Vintage', 'Normal',
             'LEGENDARY', 'Uncued', 'Bliv']
 
 
-@bot.slash_command(description='Allows you to manage your active role, or view the roles of other users.', name='roles', guild_ids=guilds)
-async def roles(inter, member:disnake.Member=None):
+@bot.user_command(name='View Roles', guild_ids=guilds)
+async def view_role_context(inter):
+    await _roles(inter, type='Role', user=inter.target)
+
+@bot.user_command(name='View Role Icons', guild_ids=guilds)
+async def view_roleicon_context(inter):
+    await _roles(inter, type='Role Icon', user=inter.target)
+
+@bot.slash_command(description='Allows you to manage your active role, or view the roles of other users.', name='roles',
+                   guild_ids=guilds)
+async def roles(inter, member: disnake.Member = None):
     await _roles(inter, type='Role', user=member)
 
 
-@bot.slash_command(description='Allows you to manage your active role icon, or view the role icons of other users.', name='roleicons', guild_ids=guilds)
-async def roleicons(inter, member:disnake.Member=None):
+@bot.slash_command(description='Allows you to manage your active role icon, or view the role icons of other users.',
+                   name='roleicons', guild_ids=guilds)
+async def roleicons(inter, member: disnake.Member = None):
     await _roles(inter, type='Role Icon', user=member)
 
 
-async def _roles(inter, type, isBlacklist=False, user=False):  # Lists a players' roles & role icons and allows them to choose between them.
-    if isBlacklist:
-        id = 9
-    elif user:
-        id = user.id
+async def _roles(inter, type, returnEmbed=False,
+                 user=False): # Lists a players' roles & role icons and allows them to choose between them.
+
+    if not returnEmbed:
         await inter.response.defer(ephemeral=True)
+
+    if user:
+
+        if isinstance(user, int):
+            id = user
+        else:
+            id = user.id
+            if id == inter.author.id:
+                user = False
     else:
         id = inter.author.id
-        await inter.response.defer(ephemeral=True)
     roles, roleIcons = get_user_roles(id)
     guild = inter.guild
-
 
     true_items = []
 
@@ -58,7 +74,7 @@ async def _roles(inter, type, isBlacklist=False, user=False):  # Lists a players
         except Exception as e:
             print(e)
 
-    if not isBlacklist and not user:
+    if not returnEmbed and not user:
         Menu = disnake.ui.Select()
         options = []
         for r in true_items:
@@ -77,14 +93,14 @@ async def _roles(inter, type, isBlacklist=False, user=False):  # Lists a players
     for i in true_items:
         roleStrList = f'{i.mention}\n{roleStrList}'
     embed = disnake.Embed(
-        title=f'{"There are currently"if isBlacklist else f"{user.name} currently has" if user else "You currently own"} {len(true_items)}{" Blacklisted" if isBlacklist else ""} {type}{"s" if len(true_items) != 1 else ""}{":" if len(true_items) > 0 else "."}',
+        title=f'{"There are currently" if returnEmbed else f"{user.name} currently has" if user else "You currently own"} {len(true_items)}{" Blacklisted" if returnEmbed else ""} {type}{"s" if len(true_items) != 1 else ""}{":" if len(true_items) > 0 else "."}',
         description=roleStrList, color=0xD8B400)
-    if not isBlacklist:
+    if not returnEmbed:
         embed.set_footer(text=f"{type}s are awarded for specific achivements. Use <command here> for more information.")
-    if len(true_items) != 0 and not isBlacklist and not user:
+    if len(true_items) != 0 and not returnEmbed and not user:
         embed.set_footer(text=f'You can select a {type.lower()} to equip using the drop down menu below.')
 
-    if isBlacklist:
+    if returnEmbed:
         return embed
     elif len(true_items) > 0 and not user:
         message = await inter.edit_original_message(components=[Menu], embed=embed)
@@ -101,10 +117,13 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
 
     bl_role, trash = get_user_roles(9)
     if role.id in bl_role:
-        await inter.response.send_message(f"{role.mention} is in the blacklist and may not be given out!\nThis request has been logged.", ephemeral=True)
+        await inter.response.send_message(
+            f"{role.mention} is in the blacklist and may not be given out!\nThis request has been logged.",
+            ephemeral=True)
         return
 
-    await inter.response.send_message(f"{member.mention} has been given the role {role.mention}!\nYou can equip your new role by doing `/roles`.")
+    await inter.response.send_message(
+        f"{member.mention} has been given the role {role.mention}!\nYou can equip your new role by doing `/roles`.")
     database_update("add", user=member.id, role=role.id)
 
 
@@ -128,7 +147,9 @@ async def addroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role):
 
     trash, bl_role = get_user_roles(9)
     if role.id in bl_role:
-        await inter.response.send_message(f"{role.mention} is in the blacklist and may not be given out!\nThis request has been logged.", ephemeral=True)
+        await inter.response.send_message(
+            f"{role.mention} is in the blacklist and may not be given out!\nThis request has been logged.",
+            ephemeral=True)
         return
 
     await inter.response.send_message(f"{member.mention} has been assigned the role icon {role.mention}!")
@@ -148,7 +169,7 @@ async def removeroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role
 
 @bot.slash_command(description='Shows All Role Assignments', name='listroles', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
-async def listall(inter, role:disnake.Role=None):
+async def listall(inter, role: disnake.Role = None):
     if role:
         return await list_specific_role(inter, role)
 
@@ -239,7 +260,7 @@ async def list_specific_role(inter, role):
         for i in items:
             user, trash1, trash2 = i
             userObj = await inter.guild.get_or_fetch_member(user)
-            #print(userObj, user)
+            # print(userObj, user)
             if userObj:
                 userList.append(userObj)
     allUserStr = ''
@@ -247,12 +268,13 @@ async def list_specific_role(inter, role):
         for au in userList:
             allUserStr = f'{allUserStr}\n{au.mention}'
             if userList.index(au) > 175:
-                allUserStr = f'{allUserStr}\n(+{len(userList)-userList.index(au)} More...)'
+                allUserStr = f'{allUserStr}\n(+{len(userList) - userList.index(au)} More...)'
                 break
     else:
         allUserStr = "Nobody has this role!"
     embed = disnake.Embed(title=f'Everyone who has the Role {role.name}:', description=allUserStr, color=role.color)
     await inter.edit_original_message(embed=embed)
+
 
 @bot.slash_command(name='dongulate', description='Adds all valid roles to a user.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
@@ -269,19 +291,21 @@ async def dongulate(inter, user: disnake.User):
             roleIcons_to_add.append(r)
             database_update('add', user.id, roleIcon=r.id)
 
-
     await user.remove_roles(*roles_to_add, reason='All valid roles added to user inventory.')
     await user.remove_roles(*roleIcons_to_add, reason='All valid role icons added to user inventory.')
     await inter.response.send_message(f"All valid roles have been assigned to {user.mention}")
 
-@bot.slash_command(name='blacklist', description='Adds a role to the blacklist, forbidding it from being assigned.', guild_ids=guilds)
+
+@bot.slash_command(name='blacklist', description='Adds a role to the blacklist, forbidding it from being assigned.',
+                   guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def blacklist(inter, role: disnake.Role):
     roleIDs, roleIconIDs = get_user_roles(9)
     roleA, roleIconA = get_user_roles(0)
     if role.id in roleIDs or role.id in roleIconIDs:
         database_update('remove', 9, role=role.id)
-        await inter.response.send_message(content=f"{role.name} has been removed from the Blacklisted Roles", ephemeral=True)
+        await inter.response.send_message(content=f"{role.name} has been removed from the Blacklisted Roles",
+                                          ephemeral=True)
     else:
         database_update('add', 9, role=role.id)
         await inter.response.send_message(f"{role.name} has been added to the Blacklisted Roles", ephemeral=True)
@@ -290,7 +314,9 @@ async def blacklist(inter, role: disnake.Role):
         elif role.id in roleIconA:
             database_update("remove", 0, role=role.id)
 
-@bot.slash_command(name='assignrole', description='Adds or removes a role from the Dongulatable roles.', guild_ids=guilds)
+
+@bot.slash_command(name='assignrole', description='Adds or removes a role from the Dongulatable roles.',
+                   guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def assign_role(inter, role: disnake.Role):
     roleIDs, trash = get_user_roles(0)
@@ -302,22 +328,26 @@ async def assign_role(inter, role: disnake.Role):
 
     if role.id in roleIDs:
         database_update('remove', 0, role=role.id)
-        await inter.response.send_message(content=f"{role.name} has been removed from the Dongulatable Roles", ephemeral=True)
+        await inter.response.send_message(content=f"{role.name} has been removed from the Dongulatable Roles",
+                                          ephemeral=True)
     else:
         database_update('add', 0, role=role.id)
         await inter.response.send_message(f"{role.name} has been added to the Dongulatable Roles", ephemeral=True)
+
 
 @bot.slash_command(name='viewblacklist', description='Lists all blacklisted roles and role icons.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def vw_bl(inter):
     await inter.response.defer()
-    embed1 = await _roles(inter, 'Role', isBlacklist = True)
-    embed2 = await _roles(inter, 'RoleIcon', isBlacklist = True)
-    await inter.edit_original_message(embeds=[embed1,embed2])
+    embed1 = await _roles(inter, 'Role', returnEmbed=True, user=9)
+    embed2 = await _roles(inter, 'RoleIcon', returnEmbed=True, user=9)
+    await inter.edit_original_message(embeds=[embed1, embed2])
 
-@bot.slash_command(name='assignroleicon', description='Adds or removes a role from the Dongulatable roles.', guild_ids=guilds)
+
+@bot.slash_command(name='assignroleicon', description='Adds or removes a role from the Dongulatable roles.',
+                   guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
-async def assign_role_icon(inter, role:disnake.Role):
+async def assign_role_icon(inter, role: disnake.Role):
     trash, roleIconIDs = get_user_roles(0)
     bl_r, trash = get_user_roles(9)
     if role.id in bl_r:
@@ -326,14 +356,15 @@ async def assign_role_icon(inter, role:disnake.Role):
         return
     if role.id in roleIconIDs:
         database_update('remove', 0, roleIcon=role.id)
-        await inter.response.send_message(content=f"{role.name} has been removed from the Dongulatable Role Icons", ephemeral=True)
+        await inter.response.send_message(content=f"{role.name} has been removed from the Dongulatable Role Icons",
+                                          ephemeral=True)
     else:
         database_update('add', 0, roleIcon=role.id)
         await inter.response.send_message(f"{role.name} has been added to the Dongulatable Role Icons", ephemeral=True)
 
+
 @bot.listen("on_dropdown")
 async def on_role_select(inter):
-
     if inter.data.custom_id == 'role_select':
         raw_id = inter.data.values[0]
         role_id = int(raw_id[3:])
@@ -364,21 +395,24 @@ async def on_role_select(inter):
         roleList.remove(role)
     except Exception as e:
         await inter.send(embed=disnake.Embed(title="Invalid Role",
-                                                              description="The role you selected either does not exist or has been removed from your inventory.",
-                                                              color=0x0e0e0e), ephemeral=True)
+                                             description="The role you selected either does not exist or has been removed from your inventory.",
+                                             color=0x0e0e0e), ephemeral=True)
         return
-
 
     try:
         await member.add_roles(role, reason=f'Role Assignment by {member.name}')
     except disnake.Forbidden as e:
-        await inter.response.send_message("The bot encountered an error assigning you the role. This is likely due to the bot having incorrect permissions to assign the role requested.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.", ephemeral=True)
+        await inter.response.send_message(
+            "The bot encountered an error assigning you the role. This is likely due to the bot having incorrect permissions to assign the role requested.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.",
+            ephemeral=True)
         return
 
     try:
         await member.remove_roles(*roleList, reason=f'Role Assignment by {member.name}')
     except disnake.Forbidden as e:
-        await inter.response.send_message("The bot encountered an error removing your existing roles. This is likely due to the bot not having permissions to remove a role in your inventory.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.", ephemeral=True)
+        await inter.response.send_message(
+            "The bot encountered an error removing your existing roles. This is likely due to the bot not having permissions to remove a role in your inventory.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.",
+            ephemeral=True)
         return
 
     embed = disnake.Embed(title='Role Selected',
@@ -400,7 +434,7 @@ def add_user_to_database(user):
 
 def get_user_roles(user, skip=False):
     if user == 9:
-        skip=True
+        skip = True
 
     conn = sqlite3.connect('roles.db')
     cur = conn.cursor()
@@ -412,7 +446,6 @@ def get_user_roles(user, skip=False):
     if not item:
         add_user_to_database(user)
         return get_user_roles(user)
-
 
     # user_roles = json.load()
     roles_str, roleIcons_str = item
@@ -442,12 +475,10 @@ def get_user_roles(user, skip=False):
         if to_blacklist:
             database_update("none", user)
 
-
     return roles, roleIcons
 
 
 def database_update(action, user, role=None, roleIcon=None):
-
     conn = sqlite3.connect('roles.db')
     cur = conn.cursor()
 
@@ -482,7 +513,6 @@ def database_update(action, user, role=None, roleIcon=None):
     sql3 = '''UPDATE roles SET roleicon = ? WHERE user IS ? '''
     cur.execute(sql3, [json.dumps(roleIcons), user])
     conn.commit()
-
 
 
 @bot.listen()
