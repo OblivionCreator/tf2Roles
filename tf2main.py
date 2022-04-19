@@ -18,12 +18,12 @@ rarities = ['Unique', 'Strange', 'Unusual', 'Collector\'s', 'Vintage', 'Normal',
             'LEGENDARY', 'Uncued', 'Bliv']
 
 
-@bot.slash_command(description='View and Equip Roles from your Role Inventory', name='roles', guild_ids=guilds)
+@bot.slash_command(description='Allows you to manage your active role, or view the roles of other users.', name='roles', guild_ids=guilds)
 async def roles(inter, member:disnake.Member=None):
     await _roles(inter, type='Role', user=member)
 
 
-@bot.slash_command(description='View and Equip Roles from your Role Icon Inventory', name='roleicons', guild_ids=guilds)
+@bot.slash_command(description='Allows you to manage your active role icon, or view the role icons of other users.', name='roleicons', guild_ids=guilds)
 async def roleicons(inter, member:disnake.Member=None):
     await _roles(inter, type='Role Icon', user=member)
 
@@ -149,6 +149,9 @@ async def removeroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role
 @bot.slash_command(description='Shows All Role Assignments', name='listroles', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def listall(inter, role:disnake.Role=None):
+    if role:
+        return await list_specific_role(inter, role)
+
     conn = sqlite3.connect('roles.db')
     cur = conn.cursor()
 
@@ -219,6 +222,35 @@ async def listall(inter, role:disnake.Role=None):
 
     await inter.response.send_message(embeds=[embed, embed2])
 
+
+async def list_specific_role(inter, role):
+    await inter.response.defer()
+    conn = sqlite3.connect('roles.db')
+    cur = conn.cursor()
+
+    roleID = role.id
+
+    sql = f'''SELECT * FROM roles WHERE role OR roleicon LIKE '%{roleID}%' '''
+    cur.execute(sql)
+
+    items = cur.fetchall()
+    userList = []
+    if len(items) > 0:
+        for i in items:
+            user, trash1, trash2 = i
+            userObj = await inter.guild.get_or_fetch_member(user)
+            if userObj:
+                userList.append(userObj)
+    print(userList)
+    print(items)
+    allUserStr = ''
+    if len(userList) > 0:
+        for au in userList:
+            allUserStr = f'{allUserStr}\n{au.mention}'
+    else:
+        allUserStr = "Nobody has this role!"
+    embed = disnake.Embed(title=f'Everyone who has the Role {role.name}:', description=allUserStr, color=role.color)
+    await inter.edit_original_message(embed=embed)
 
 @bot.slash_command(name='dongulate', description='Adds all valid roles to a user.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
