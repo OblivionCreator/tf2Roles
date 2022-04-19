@@ -234,16 +234,15 @@ async def list_specific_role(inter, role):
     cur.execute(sql)
 
     items = cur.fetchall()
+    print(items)
     userList = []
     if len(items) > 0:
         for i in items:
             user, trash1, trash2 = i
             userObj = await inter.guild.get_or_fetch_member(user)
-            print(userObj, user)
+            #print(userObj, user)
             if userObj:
                 userList.append(userObj)
-    print(userList)
-    print(items)
     allUserStr = ''
     if len(userList) > 0:
         for au in userList:
