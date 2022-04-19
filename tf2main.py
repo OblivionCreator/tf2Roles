@@ -239,6 +239,7 @@ async def list_specific_role(inter, role):
         for i in items:
             user, trash1, trash2 = i
             userObj = await inter.guild.get_or_fetch_member(user)
+            print(userObj, user)
             if userObj:
                 userList.append(userObj)
     print(userList)
