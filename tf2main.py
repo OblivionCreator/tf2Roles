@@ -291,11 +291,8 @@ async def dongulate(inter, user: disnake.User):
             roleIcons_to_add.append(r)
             database_update('add', user.id, roleIcon=r.id)
 
-    try:
-        betarole = inter.guild.get_role(965347079708897350)
-        await user.add_role(betarole, reason='Dongulated.')
-    except Exception as e:
-        pass
+    betarole = inter.guild.get_role(965347079708897350)
+    await user.add_role(betarole, reason='Dongulated.')
 
     await user.remove_roles(*roles_to_add, reason='All valid roles added to user inventory.')
     await user.remove_roles(*roleIcons_to_add, reason='All valid role icons added to user inventory.')
