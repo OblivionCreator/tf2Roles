@@ -266,8 +266,8 @@ async def list_specific_role(inter, role):
     allUserStr = ''
     if len(userList) > 0:
         for au in userList:
-            allUserStr = f'{allUserStr}\n{au.mention}'
-            if userList.index(au) > 175:
+            allUserStr = f'{allUserStr}\n{au.name} ({au.mention})'
+            if len(allUserStr) > 4000:
                 allUserStr = f'{allUserStr}\n(+{len(userList) - userList.index(au)} More...)'
                 break
     else:
@@ -290,6 +290,12 @@ async def dongulate(inter, user: disnake.User):
         if r.id in roleIconIDs:
             roleIcons_to_add.append(r)
             database_update('add', user.id, roleIcon=r.id)
+
+    try:
+        betarole = inter.guild.get_role(965347079708897350)
+        await user.add_role(betarole, reason='Dongulated.')
+    except Exception as e:
+        pass
 
     await user.remove_roles(*roles_to_add, reason='All valid roles added to user inventory.')
     await user.remove_roles(*roleIcons_to_add, reason='All valid role icons added to user inventory.')
@@ -341,7 +347,7 @@ async def vw_bl(inter):
     user = 9
     await inter.response.defer()
     embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user)
-    embed2 = await _roles(inter, 'RoleIcon', returnEmbed=True, user=user)
+    embed2 = await _roles(inter, 'Icon', returnEmbed=True, user=user)
     await inter.edit_original_message(embeds=[embed1, embed2])
 
 
@@ -350,7 +356,7 @@ async def showoff(inter):
     await inter.response.defer()
     user = inter.author
     embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user)
-    embed2 = await _roles(inter, 'RoleIcon', returnEmbed=True, user=user)
+    embed2 = await _roles(inter, 'Icon', returnEmbed=True, user=user)
     await inter.edit_original_message(embeds=[embed1, embed2])
 
 @bot.slash_command(name='assignroleicon', description='Adds or removes a role from the Dongulatable roles.',
