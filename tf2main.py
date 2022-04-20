@@ -292,8 +292,7 @@ async def dongulate(inter, user: disnake.User):
             database_update('add', user.id, roleIcon=r.id)
 
     betarole = inter.guild.get_role(965347079708897350)
-    await user.add_role(betarole, reason='Dongulated.')
-
+    await user.add_roles(betarole, reason='Dongulated.')
     await user.remove_roles(*roles_to_add, reason='All valid roles added to user inventory.')
     await user.remove_roles(*roleIcons_to_add, reason='All valid role icons added to user inventory.')
     await inter.response.send_message(f"All valid roles have been assigned to {user.mention}")
