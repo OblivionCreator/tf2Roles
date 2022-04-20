@@ -24,7 +24,7 @@ async def view_role_context(inter):
 
 @bot.user_command(name='View Role Icons', guild_ids=guilds)
 async def view_roleicon_context(inter):
-    await _roles(inter, type='Role Icon', user=inter.target)
+    await _roles(inter, type='Icon', user=inter.target)
 
 @bot.slash_command(description='Allows you to manage your active role, or view the roles of other users.', name='roles',
                    guild_ids=guilds)
@@ -33,9 +33,9 @@ async def roles(inter, member: disnake.Member = None):
 
 
 @bot.slash_command(description='Allows you to manage your active role icon, or view the role icons of other users.',
-                   name='roleicons', guild_ids=guilds)
+                   name='icons', guild_ids=guilds)
 async def roleicons(inter, member: disnake.Member = None):
-    await _roles(inter, type='Role Icon', user=member)
+    await _roles(inter, type='Icon', user=member)
 
 
 async def _roles(inter, type, returnEmbed=False,
@@ -93,12 +93,12 @@ async def _roles(inter, type, returnEmbed=False,
     for i in true_items:
         roleStrList = f'{i.mention}\n{roleStrList}'
     embed = disnake.Embed(
-        title=f'{"There are currently" if returnEmbed else f"{user.name} currently has" if user else "You currently own"} {len(true_items)}{" Blacklisted" if returnEmbed else ""} {type}{"s" if len(true_items) != 1 else ""}{":" if len(true_items) > 0 else "."}',
+        title=f'{"There are currently" if id == 9 else f"{user.name} currently has" if user else "You currently own"} {len(true_items)}{" Blacklisted" if id == 9 else ""} {type}{"s" if len(true_items) != 1 else ""}{":" if len(true_items) > 0 else "."}',
         description=roleStrList, color=0xD8B400)
     if not returnEmbed:
         embed.set_footer(text=f"{type}s are awarded for specific achivements. Use <command here> for more information.")
     if len(true_items) != 0 and not returnEmbed and not user:
-        embed.set_footer(text=f'You can select a {type.lower()} to equip using the drop down menu below.')
+        embed.set_footer(text=f'You can select a{"n" if type == "Icon" else ""} {type.lower()} to equip using the drop down menu below.')
 
     if returnEmbed:
         return embed
@@ -338,11 +338,20 @@ async def assign_role(inter, role: disnake.Role):
 @bot.slash_command(name='viewblacklist', description='Lists all blacklisted roles and role icons.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def vw_bl(inter):
+    user = 9
     await inter.response.defer()
-    embed1 = await _roles(inter, 'Role', returnEmbed=True, user=9)
-    embed2 = await _roles(inter, 'RoleIcon', returnEmbed=True, user=9)
+    embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user)
+    embed2 = await _roles(inter, 'RoleIcon', returnEmbed=True, user=user)
     await inter.edit_original_message(embeds=[embed1, embed2])
 
+
+@bot.slash_command(name='show', description='Shows off your role inventory publicly!', guild_ids=guilds)
+async def showoff(inter):
+    await inter.response.defer()
+    user = inter.author
+    embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user)
+    embed2 = await _roles(inter, 'RoleIcon', returnEmbed=True, user=user)
+    await inter.edit_original_message(embeds=[embed1, embed2])
 
 @bot.slash_command(name='assignroleicon', description='Adds or removes a role from the Dongulatable roles.',
                    guild_ids=guilds)
