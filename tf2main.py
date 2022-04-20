@@ -283,9 +283,27 @@ async def dongulate(inter, user: disnake.User):
     roles_to_add = []
     roleIcons_to_add = []
 
-    for r in user.roles:
+    masterRoles = {
+        298698700719521795:298698201270059009, #Rhythm Maestro -> Sushi Maestro
+        409552655623389185:409551428814635008, #Rhythm Master -> Sushi Master
+        819428632447287296:517143533853868074, #Cafe Champion -> Cafe Regular
+        517143533853868074:517143450391543818, #Cafe Regular -> Cafe Visitor
+    }
+
+    addedRoles = []
+
+    userRoles = user.roles
+
+    for r in userRoles:
+
+        if r.id in masterRoles:
+            role = inter.guild.get_role(masterRoles[r.id])
+            if role not in userRoles:
+                userRoles.append(role)
+
         if r.id in roleIDs:
             roles_to_add.append(r)
+            addedRoles.append(r.id)
             database_update('add', user.id, role=r.id)
         if r.id in roleIconIDs:
             roleIcons_to_add.append(r)
