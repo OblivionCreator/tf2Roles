@@ -103,7 +103,7 @@ async def _roles(inter, type, returnEmbed = False,
 
     if not returnEmbed and not user:
 
-        rarities = getLang(inter, 'Translation', 'RARITY_LIST').split(',')
+        rarities = getLang(inter, 'Translation', 'RARITY_LIST').split(', ')
 
         Menu = disnake.ui.Select()
         options = []
