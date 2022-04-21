@@ -2,7 +2,6 @@ import json
 import operator
 import sqlite3
 import random
-import asyncio
 import disnake
 from disnake.ext import commands
 
@@ -28,20 +27,23 @@ async def view_roleicon_context(inter):
 
 @bot.slash_command(description='Allows you to manage your active role, or view the roles of other users.', name='roles',
                    guild_ids=guilds)
-async def roles(inter, member: disnake.Member = None):
-    await _roles(inter, type='Role', user=member)
+async def roles(inter, member: disnake.Member = None, page:int=1):
+    await _roles(inter, type='Role', user=member, page=page)
 
 
 @bot.slash_command(description='Allows you to manage your active role icon, or view the role icons of other users.',
                    name='icons', guild_ids=guilds)
-async def roleicons(inter, member: disnake.Member = None):
-    await _roles(inter, type='Icon', user=member)
+async def roleicons(inter, member: disnake.Member = None, page:int=1):
+    await _roles(inter, type='Icon', user=member, page=page)
 
 
-async def _roles(inter, type, returnEmbed=False,
-                 user=False): # Lists a players' roles & role icons and allows them to choose between them.
+async def _roles(inter, type, returnEmbed = False,
+                 user = False, page = 1, defer=True): # Lists a players' roles & role icons and allows them to choose between them.
 
-    if not returnEmbed:
+    if page < 1:
+        page = 1
+
+    if not returnEmbed and defer:
         await inter.response.defer(ephemeral=True)
 
     if user:
@@ -74,10 +76,17 @@ async def _roles(inter, type, returnEmbed=False,
         except Exception as e:
             print(e)
 
+    if page-1 > (len(true_items))/25:
+        page = 1
+
+    true_items_shortened = true_items[(page - 1)*25:(page * 25)]
+
+    aList = []
+
     if not returnEmbed and not user:
         Menu = disnake.ui.Select()
         options = []
-        for r in true_items:
+        for r in true_items_shortened:
             quality = random.choice(rarities)
             level = random.randint(0, 100)
             temp = disnake.SelectOption(label=r.name, value=f'{shortType}_{r.id}',
@@ -85,25 +94,38 @@ async def _roles(inter, type, returnEmbed=False,
             options.append(temp)
         Menu.options = options
         Menu.custom_id = 'role_select'
+        aList.append(Menu)
     else:
         Menu = None
 
     roleStrList = ''
+    PageDown = None
+    PageUp = None
 
-    for i in true_items:
+    for i in true_items_shortened:
         roleStrList = f'{i.mention}\n{roleStrList}'
+    if len(true_items) > len(true_items_shortened):
+        roleStrList = f'{roleStrList}**({len(true_items_shortened)}/{len(true_items)})**'
+
+        if true_items[-1] == true_items_shortened[-1] and len(true_items) > 25:
+            pageDown = disnake.ui.Button(label='<-', custom_id=f'{shortType}_{page-1}', style=1)
+            aList.append(pageDown)
+        if true_items[0] == true_items_shortened[0] and len(true_items) > 25:
+            pageUp = disnake.ui.Button(label='->', custom_id=f'{shortType}_{page+1}', style=1)
+            aList.append(pageUp)
+
     embed = disnake.Embed(
-        title=f'{"There are currently" if id == 9 else f"{user.name} currently has" if user else "You currently own"} {len(true_items)}{" Blacklisted" if id == 9 else ""} {type}{"s" if len(true_items) != 1 else ""}{":" if len(true_items) > 0 else "."}',
+        title=f'{"There are currently" if id == 9 else f"{user.name} currently has" if user else "You currently own"} {len(true_items)}{" Blacklisted" if id == 9 else ""} {type}{"s" if len(true_items) != 1 else ""}{":" if len(true_items) > 0 else "."}\n{f"({len(true_items_shortened)} Shown)" if len(true_items_shortened) < len(true_items) else ""}',
         description=roleStrList, color=0xD8B400)
     if not returnEmbed:
-        embed.set_footer(text=f"{type}s are awarded for specific achivements. Use <command here> for more information.")
+        embed.set_footer(text=f"{type}s are awarded for specific achivements. Use ?t roles for more information.")
     if len(true_items) != 0 and not returnEmbed and not user:
         embed.set_footer(text=f'You can select a{"n" if type == "Icon" else ""} {type.lower()} to equip using the drop down menu below.')
 
     if returnEmbed:
         return embed
     elif len(true_items) > 0 and not user:
-        message = await inter.edit_original_message(components=[Menu], embed=embed)
+        message = await inter.edit_original_message(components=aList, embed=embed)
     else:
         message = await inter.edit_original_message(embed=embed)
 
@@ -173,6 +195,8 @@ async def listall(inter, role: disnake.Role = None):
     if role:
         return await list_specific_role(inter, role)
 
+    await inter.response.defer()
+
     conn = sqlite3.connect('roles.db')
     cur = conn.cursor()
 
@@ -241,7 +265,7 @@ async def listall(inter, role: disnake.Role = None):
     embed2.color = color2
     embed2.set_footer(text='NOTE: This only counts role icons used by members still in the server.')
 
-    await inter.response.send_message(embeds=[embed, embed2])
+    await inter.edit_original_message(embeds=[embed, embed2])
 
 
 async def list_specific_role(inter, role):
@@ -449,6 +473,15 @@ async def on_role_select(inter):
                           color=role.color)
     await inter.response.send_message(embed=embed, ephemeral=True)
 
+@bot.listen("on_button_click")
+async def on_page_click(inter):
+    custom_id = inter.data.custom_id
+    if custom_id[0:2] == 'ro':
+        longvariablethatdoesnothing, pageNo = custom_id.split("_")
+        await _roles(inter, type='Role', page=int(pageNo))
+        if custom_id[0:2] == 'ri':
+            longvariablethatdoesnothing, pageNo = custom_id.split("_")
+            await _roles(inter, type='Icon', page=int(pageNo))
 
 def add_user_to_database(user):
     conn = sqlite3.connect('roles.db')
