@@ -438,16 +438,16 @@ async def assign_role_icon(inter, role: disnake.Role):
     trash, roleIconIDs = get_user_roles(0)
     bl_r, trash = get_user_roles(9)
     if role.id in bl_r:
-        await inter.response.send_message(content=getLang(inter, 'Translate', 'DONGULATE_ASSIGN_FAILED_BLACKLIST').format(role.name),
+        await inter.response.send_message(content=getLang(inter, 'Translation', 'DONGULATE_ASSIGN_FAILED_BLACKLIST').format(role.name),
                                           ephemeral=True)
         return
     if role.id in roleIconIDs:
         database_update('remove', 0, roleIcon=role.id)
-        await inter.response.send_message(content=getLang(inter, 'Translate', 'DONGULATE_ASSIGN_REMOVED_SUCCESS_ICON').format(role.name),
+        await inter.response.send_message(content=getLang(inter, 'Translation', 'DONGULATE_ASSIGN_REMOVED_SUCCESS_ICON').format(role.name),
                                           ephemeral=True)
     else:
         database_update('add', 0, roleIcon=role.id)
-        await inter.response.send_message(getLang(inter, 'Translate', 'DONGULATE_ASSIGN_ADDED_SUCCESS_ICON').format(role.name), ephemeral=True)
+        await inter.response.send_message(getLang(inter, 'Translation', 'DONGULATE_ASSIGN_ADDED_SUCCESS_ICON').format(role.name), ephemeral=True)
 
 
 @bot.listen("on_dropdown")
@@ -481,8 +481,8 @@ async def on_role_select(inter):
     try:
         roleList.remove(role)
     except Exception as e:
-        await inter.send(embed=disnake.Embed(title=getLang(inter, 'Translate', 'EQUIP_ROLE_FAILED_BAD_ROLE_TITLE').format(role.name),
-                                             description=getLang(inter, 'Translate', 'EQUIP_ROLE_FAILED_BAD_ROLE'),
+        await inter.send(embed=disnake.Embed(title=getLang(inter, 'Translation', 'EQUIP_ROLE_FAILED_BAD_ROLE_TITLE').format(role.name),
+                                             description=getLang(inter, 'Translation', 'EQUIP_ROLE_FAILED_BAD_ROLE'),
                                              color=0x0e0e0e), ephemeral=True)
         return
 
@@ -490,7 +490,7 @@ async def on_role_select(inter):
         await member.add_roles(role, reason=f'Role Assignment by {member.name}')
     except disnake.Forbidden as e:
         await inter.response.send_message(
-            getLang(inter, 'Translate', 'EQUIP_ROLE_FAILED_ERROR_GENERIC'),
+            getLang(inter, 'Translation', 'EQUIP_ROLE_FAILED_ERROR_GENERIC'),
             ephemeral=True)
         return
 
@@ -498,12 +498,12 @@ async def on_role_select(inter):
         await member.remove_roles(*roleList, reason=f'Role Assignment by {member.name}')
     except disnake.Forbidden as e:
         await inter.response.send_message(
-            getLang(inter, 'Translate', 'REMOVE_ROLE_FAILED_ERROR_GENERIC'),
+            getLang(inter, 'Translation', 'REMOVE_ROLE_FAILED_ERROR_GENERIC'),
             ephemeral=True)
         return
 
     embed = disnake.Embed(title='Role Selected',
-                          description=getLang(inter, 'Translate', 'EQUIP_ROLE_SUCCESS').format(role.mention),
+                          description=getLang(inter, 'Translation', 'EQUIP_ROLE_SUCCESS').format(role.mention),
                           color=role.color)
     await inter.response.send_message(embed=embed, ephemeral=True)
 
