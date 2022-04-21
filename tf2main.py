@@ -4,6 +4,7 @@ import sqlite3
 import random
 import disnake
 from disnake.ext import commands
+from configparser import ConfigParser
 
 intents = disnake.Intents.default()
 intents.guilds = True
@@ -12,10 +13,27 @@ intents.presences = True
 bot = commands.Bot(command_prefix='unused lol', intents=intents,
                    allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
 guilds = [770428394918641694, 296802696243970049]
-rarities = ['Unique', 'Strange', 'Unusual', 'Collector\'s', 'Vintage', 'Normal', 'Decorated', 'Self-Made', 'VALVE',
-            'noun', 'Community', 'Haunted', 'Genuine', 'Untradable', 'Uncraftable', 'Common', 'Mythic', 'Rare',
-            'LEGENDARY', 'Uncued', 'Bliv', 'Cringe', 'Battleworn', 'Smokin\'', 'Smelly', 'Suspicious', 'DCUR', 'Medically Trained',
-            'Dongulated', 'Peer Reviewed', 'Verified', 'Non-Canon']
+
+def getLang(inter, section, line):
+
+    language = inter.locale
+
+    languages = {
+        'en-US':"translation/lang_en.ini",
+        'en-GB':"translation/lang_en.ini",
+        'ko':"translation/lang_ko.ini"
+    }
+
+    if language in languages:
+        file = languages[language]
+    else:
+        file = languages['en-US']
+
+    lang = ConfigParser()
+    lang.read(file, encoding='utf-8')
+    lineStr = lang.get(section, line)
+
+    return lineStr
 
 @bot.user_command(name='View Roles', guild_ids=guilds)
 async def view_role_context(inter):
@@ -84,6 +102,9 @@ async def _roles(inter, type, returnEmbed = False,
     aList = []
 
     if not returnEmbed and not user:
+
+        rarities = getLang(inter, 'Translation', 'RARITY_LIST').split(',')
+
         Menu = disnake.ui.Select()
         options = []
         for r in true_items_shortened:
@@ -105,7 +126,7 @@ async def _roles(inter, type, returnEmbed = False,
     for i in true_items_shortened:
         roleStrList = f'{i.mention}\n{roleStrList}'
     if len(true_items) > len(true_items_shortened):
-        roleStrList = f'{roleStrList}**({len(true_items_shortened)}/{len(true_items)})**'
+        roleStrList = f'{roleStrList}**({(page-1)*25}-{len(true_items_shortened)}/{len(true_items)})**'
 
         if true_items[-1] == true_items_shortened[-1] and len(true_items) > 25:
             pageDown = disnake.ui.Button(label='<-', custom_id=f'{shortType}_{page-1}', style=1)
@@ -114,13 +135,23 @@ async def _roles(inter, type, returnEmbed = False,
             pageUp = disnake.ui.Button(label='->', custom_id=f'{shortType}_{page+1}', style=1)
             aList.append(pageUp)
 
-    embed = disnake.Embed(
-        title=f'{"There are currently" if id == 9 else f"{user.name} currently has" if user else "You currently own"} {len(true_items)}{" Blacklisted" if id == 9 else ""} {type}{"s" if len(true_items) != 1 else ""}{":" if len(true_items) > 0 else "."}\n{f"({len(true_items_shortened)} Shown)" if len(true_items_shortened) < len(true_items) else ""}',
-        description=roleStrList, color=0xD8B400)
+    if len(true_items) != 1:
+        type_plural = getLang(inter, section='Translation', line=f'{type.upper()}_PLURAL')
+    else:
+        type_plural = getLang(inter, section='Translation', line=f'{type.upper()}')
+
+    if id == 9:
+        embTitle = getLang(inter, section='Translation', line='ROLES_LIST_BLACKLIST').format(len(true_items), type_plural)
+    if user is True:
+        embTitle = getLang(inter, section='Translation', line='ROLES_LIST_USER').format(user.name, len(true_items), type_plural)
+    else:
+        embTitle = getLang(inter, section='Translation', line='ROLES_LIST_INVOKER').format(len(true_items), type_plural)
+
+    embed = disnake.Embed(title=embTitle, description=roleStrList, color=0xD8B400)
     if not returnEmbed:
-        embed.set_footer(text=f"{type}s are awarded for specific achivements. Use ?t roles for more information.")
+        embed.set_footer(text=getLang(inter, section='Translation', line='ROLE_FOOTER_INFO').format(getLang(inter, section='Translation', line=f'{type.upper()}_PLURAL')))
     if len(true_items) != 0 and not returnEmbed and not user:
-        embed.set_footer(text=f'You can select a{"n" if type == "Icon" else ""} {type.lower()} to equip using the drop down menu below.')
+        embed.set_footer(text=getLang(inter, section='Translation', line='ROLE_FOOTER_DROPDOWN').format(getLang(inter, section='Translation', line=f'{type.upper()}')))
 
     if returnEmbed:
         return embed
@@ -134,18 +165,15 @@ async def _roles(inter, type, returnEmbed = False,
 @commands.has_permissions(manage_roles=True)
 async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
     if role.name == '@everyone':
-        await inter.response.send_message("You can not assign the role @everyone!", ephemeral=True)
+        await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_FAILED_EVERYONE'), ephemeral=True)
         return
 
     bl_role, trash = get_user_roles(9)
     if role.id in bl_role:
-        await inter.response.send_message(
-            f"{role.mention} is in the blacklist and may not be given out!\nThis request has been logged.",
-            ephemeral=True)
+        await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_FAILED_BLACKLIST'), ephemeral=True),
         return
 
-    await inter.response.send_message(
-        f"{member.mention} has been given the role {role.mention}!\nYou can equip your new role by doing `/roles`.")
+    await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_SUCCESS').format(member.mention, role.mention))
     database_update("add", user=member.id, role=role.id)
 
 
@@ -153,38 +181,36 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
 @commands.has_permissions(manage_roles=True)
 async def removerole(inter, member: disnake.abc.User, role: disnake.abc.Role):
     if role.name == '@everyone':
-        await inter.response.send_message("You can not remove @everyone from someone!", ephemeral=True)
+        await inter.response.send_message(getLang(inter, section='Translation', line=f'REMOVE_ROLE_FAILED_EVERYONE'), ephemeral=True)
         return
-    await inter.response.send_message(f"{role.mention} was removed from {member.mention}!")
+    await inter.response.send_message(getLang(inter, section='Translation', line='REMOVE_ROLE_SUCCESS').format(role.mention, member.mention))
     database_update("remove", user=member.id, role=role.id)
     await member.remove_roles(role, reason=f'Role removed by {inter.author} ({inter.author.id})')
 
 
-@bot.slash_command(description='Assigns a role to a user.', name='giveicon', guild_ids=guilds)
+@bot.slash_command(description='Gives an icon to a user.', name='giveicon', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def addroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role):
     if role.name == '@everyone':
-        await inter.response.send_message("You can not assign the role @everyone!", ephemeral=True)
+        await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_FAILED_EVERYONE'), ephemeral=True)
         return
 
     trash, bl_role = get_user_roles(9)
     if role.id in bl_role:
-        await inter.response.send_message(
-            f"{role.mention} is in the blacklist and may not be given out!\nThis request has been logged.",
-            ephemeral=True)
+        await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_FAILED_BLACKLIST'),ephemeral=True)
         return
 
-    await inter.response.send_message(f"{member.mention} has been assigned the role icon {role.mention}!")
+    await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ICON_SUCCESS').format(member.mention, role.mention))
     database_update("add", user=member.id, roleIcon=role.id)
 
 
-@bot.slash_command(description='Removes a role from a user.', name='removeicon', guild_ids=guilds)
+@bot.slash_command(description='Removes an icon from a user.', name='removeicon', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def removeroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role):
     if role.name == '@everyone':
-        await inter.response.send_message("You can not remove @everyone from someone!", ephemeral=True)
+        await inter.response.send_message(getLang(inter, section='Translation', line=f'REMOVE_ROLE_FAILED_EVERYONE'), ephemeral=True)
         return
-    await inter.response.send_message(f"{role.mention} has been removed from {member}!")
+    await inter.response.send_message(getLang(inter, section='Translation', line='REMOVE_ROLE_SUCCESS').format(role.mention, member.mention))
     database_update("remove", user=member.id, roleIcon=role.id)
     await member.remove_roles(role, reason=f'Role removed by {inter.author} ({inter.author.id})')
 
@@ -258,12 +284,12 @@ async def listall(inter, role: disnake.Role = None):
             color2 = temprole.color
             roleClr = True
 
-    embed = disnake.Embed(title="Here are all the roles currently in use!", description=roleStr)
+    embed = disnake.Embed(title=getLang(inter, 'Translation', 'LIST_ALL_ROLES'), description=roleStr)
     embed.color = color
-    embed.set_footer(text='NOTE: This only counts roles used by members still in the server.')
-    embed2 = disnake.Embed(title="Here are all the roles currently in use!", description=roleIconStr)
+    embed.set_footer(text=getLang(inter, 'Translation', 'LIST_ALL_ROLES_FOOTER'))
+    embed2 = disnake.Embed(title=getLang(inter, 'Translation', 'LIST_ALL_ICONS'), description=roleIconStr)
     embed2.color = color2
-    embed2.set_footer(text='NOTE: This only counts role icons used by members still in the server.')
+    embed2.set_footer(text=getLang(inter, 'Translation', 'LIST_ALL_ICONS_FOOTER'))
 
     await inter.edit_original_message(embeds=[embed, embed2])
 
@@ -292,11 +318,11 @@ async def list_specific_role(inter, role):
         for au in userList:
             allUserStr = f'{allUserStr}\n{au.name} ({au.mention})'
             if len(allUserStr) > 4000:
-                allUserStr = f'{allUserStr}\n(+{len(userList) - userList.index(au)} More...)'
+                allUserStr = f'{allUserStr}\n{getLang(inter, "Translation", "LIST_ALL_OVERFLOW").format((len(userList) - userList.index(au)))}'
                 break
     else:
-        allUserStr = "Nobody has this role!"
-    embed = disnake.Embed(title=f'Everyone who has the Role {role.name}:', description=allUserStr, color=role.color)
+        allUserStr = getLang(inter, 'Translation', 'LIST_ROLE_RETURN_NONE')
+    embed = disnake.Embed(title=getLang(inter, 'Translation', 'LIST_ROLE').format(role.name), description=allUserStr, color=role.color)
     await inter.edit_original_message(embed=embed)
 
 
@@ -337,7 +363,7 @@ async def dongulate(inter, user: disnake.User):
     await user.add_roles(betarole, reason='Dongulated.')
     await user.remove_roles(*roles_to_add, reason='All valid roles added to user inventory.')
     await user.remove_roles(*roleIcons_to_add, reason='All valid role icons added to user inventory.')
-    await inter.response.send_message(f"All valid roles have been assigned to {user.mention}")
+    await inter.response.send_message(getLang(inter, 'Translation', 'DONGULATE_SUCCESS').format(user.mention))
 
 
 @bot.slash_command(name='blacklist', description='Adds a role to the blacklist, forbidding it from being assigned.',
@@ -348,11 +374,11 @@ async def blacklist(inter, role: disnake.Role):
     roleA, roleIconA = get_user_roles(0)
     if role.id in roleIDs or role.id in roleIconIDs:
         database_update('remove', 9, role=role.id)
-        await inter.response.send_message(content=f"{role.name} has been removed from the Blacklisted Roles",
+        await inter.response.send_message(content=getLang(inter, 'Translation', 'BLACKLIST_REMOVE_SUCCESS').format(role.name),
                                           ephemeral=True)
     else:
         database_update('add', 9, role=role.id)
-        await inter.response.send_message(f"{role.name} has been added to the Blacklisted Roles", ephemeral=True)
+        await inter.response.send_message(getLang(inter, 'Translation', 'BLACKLIST_ADD_SUCCESS').format(role.name), ephemeral=True)
         if role.id in roleA:
             database_update("remove", 0, role=role.id)
         elif role.id in roleIconA:
@@ -366,17 +392,17 @@ async def assign_role(inter, role: disnake.Role):
     roleIDs, trash = get_user_roles(0)
     bl_r, trash = get_user_roles(9)
     if role.id in bl_r:
-        await inter.response.send_message(content=f"{role.name} is blacklisted and may not be assigned.",
+        await inter.response.send_message(content=getLang(inter, 'Translation', 'DONGULATE_ASSIGN_FAILED_BLACKLIST').format(role.name),
                                           ephemeral=True)
         return
 
     if role.id in roleIDs:
         database_update('remove', 0, role=role.id)
-        await inter.response.send_message(content=f"{role.name} has been removed from the Dongulatable Roles",
+        await inter.response.send_message(content=getLang(inter, 'Translation', 'DONGULATE_ASSIGN_REMOVED_SUCCESS').format(role.name),
                                           ephemeral=True)
     else:
         database_update('add', 0, role=role.id)
-        await inter.response.send_message(f"{role.name} has been added to the Dongulatable Roles", ephemeral=True)
+        await inter.response.send_message(getLang(inter, 'Translation', 'DONGULATE_ASSIGN_ADDED_SUCCESS').format(role.name), ephemeral=True)
 
 
 @bot.slash_command(name='viewblacklist', description='Lists all blacklisted roles and role icons.', guild_ids=guilds)
@@ -397,23 +423,23 @@ async def showoff(inter):
     embed2 = await _roles(inter, 'Icon', returnEmbed=True, user=user)
     await inter.edit_original_message(embeds=[embed1, embed2])
 
-@bot.slash_command(name='assignroleicon', description='Adds or removes a role from the Dongulatable roles.',
+@bot.slash_command(name='assignicon', description='Adds or removes a role from the Dongulatable roles.',
                    guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def assign_role_icon(inter, role: disnake.Role):
     trash, roleIconIDs = get_user_roles(0)
     bl_r, trash = get_user_roles(9)
     if role.id in bl_r:
-        await inter.response.send_message(content=f"{role.name} is blacklisted and may not be assigned.",
+        await inter.response.send_message(content=getLang(inter, 'Translate', 'DONGULATE_ASSIGN_FAILED_BLACKLIST').format(role.name),
                                           ephemeral=True)
         return
     if role.id in roleIconIDs:
         database_update('remove', 0, roleIcon=role.id)
-        await inter.response.send_message(content=f"{role.name} has been removed from the Dongulatable Role Icons",
+        await inter.response.send_message(content=getLang(inter, 'Translate', 'DONGULATE_ASSIGN_REMOVED_SUCCESS_ICON').format(role.name),
                                           ephemeral=True)
     else:
         database_update('add', 0, roleIcon=role.id)
-        await inter.response.send_message(f"{role.name} has been added to the Dongulatable Role Icons", ephemeral=True)
+        await inter.response.send_message(getLang(inter, 'Translate', 'DONGULATE_ASSIGN_ADDED_SUCCESS_ICON').format(role.name), ephemeral=True)
 
 
 @bot.listen("on_dropdown")
@@ -447,8 +473,8 @@ async def on_role_select(inter):
     try:
         roleList.remove(role)
     except Exception as e:
-        await inter.send(embed=disnake.Embed(title="Invalid Role",
-                                             description="The role you selected either does not exist or has been removed from your inventory.",
+        await inter.send(embed=disnake.Embed(title=getLang(inter, 'Translate', 'EQUIP_ROLE_FAILED_BAD_ROLE_TITLE').format(role.name),
+                                             description=getLang(inter, 'Translate', 'EQUIP_ROLE_FAILED_BAD_ROLE'),
                                              color=0x0e0e0e), ephemeral=True)
         return
 
@@ -456,7 +482,7 @@ async def on_role_select(inter):
         await member.add_roles(role, reason=f'Role Assignment by {member.name}')
     except disnake.Forbidden as e:
         await inter.response.send_message(
-            "The bot encountered an error assigning you the role. This is likely due to the bot having incorrect permissions to assign the role requested.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.",
+            getLang(inter, 'Translate', 'EQUIP_ROLE_FAILED_ERROR_GENERIC'),
             ephemeral=True)
         return
 
@@ -464,12 +490,12 @@ async def on_role_select(inter):
         await member.remove_roles(*roleList, reason=f'Role Assignment by {member.name}')
     except disnake.Forbidden as e:
         await inter.response.send_message(
-            "The bot encountered an error removing your existing roles. This is likely due to the bot not having permissions to remove a role in your inventory.\nPlease contact a member of staff for assistance and use /roles to show them what roles you currently own.",
+            getLang(inter, 'Translate', 'REMOVE_ROLE_FAILED_ERROR_GENERIC'),
             ephemeral=True)
         return
 
     embed = disnake.Embed(title='Role Selected',
-                          description=f'You have equipped the role {role.mention} from your inventory.',
+                          description=getLang(inter, 'Translate', 'EQUIP_ROLE_SUCCESS').format(role.mention),
                           color=role.color)
     await inter.response.send_message(embed=embed, ephemeral=True)
 
@@ -580,12 +606,11 @@ def database_update(action, user, role=None, roleIcon=None):
 @bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
-        await ctx.send("You do not have permission to use this command!", ephemeral=True)
+        await ctx.send(getLang(ctx, 'Translate', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
         return
 
     await ctx.send(
-        f"Unknown Error:\n{error}\nPlease contact OblivionCreator#9905 for assistance or report an issue on the GitHub page at https://bliv.red/rolermobster")
+        getLang(ctx, 'Translate', 'EQUIP_ROLE_SUCCESS').format(error))
     print(error)
-
 
 bot.run(open('token.txt', 'r').read())
