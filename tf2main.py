@@ -142,10 +142,10 @@ async def _roles(inter, type, returnEmbed = False,
 
     if id == 9:
         embTitle = getLang(inter, section='Translation', line='ROLES_LIST_BLACKLIST').format(len(true_items), type_plural)
-    if user is True:
-        embTitle = getLang(inter, section='Translation', line='ROLES_LIST_INVOKER').format(user.name, len(true_items), type_plural)
+    if user:
+        embTitle = getLang(inter, section='Translation', line='ROLES_LIST_USER').format(user.name, len(true_items), type_plural)
     else:
-        embTitle = getLang(inter, section='Translation', line='ROLES_LIST_USER').format(len(true_items), type_plural)
+        embTitle = getLang(inter, section='Translation', line='ROLES_LIST_INVOKER').format(len(true_items), type_plural)
 
     embed = disnake.Embed(title=embTitle, description=roleStrList, color=0xD8B400)
     if not returnEmbed:
