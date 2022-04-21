@@ -124,7 +124,7 @@ async def _roles(inter, type, returnEmbed = False,
     PageUp = None
 
     for i in true_items_shortened:
-        roleStrList = f'{i.mention}\n{roleStrList}'
+        roleStrList = f'{roleStrList}\n{i.mention}'
     if len(true_items) > len(true_items_shortened):
         roleStrList = f'{roleStrList}**({(page-1)*25}-{len(true_items_shortened)}/{len(true_items)})**'
 
