@@ -183,7 +183,11 @@ async def removerole(inter, member: disnake.abc.User, role: disnake.abc.Role):
     if role.name == '@everyone':
         await inter.response.send_message(getLang(inter, section='Translation', line=f'REMOVE_ROLE_FAILED_EVERYONE'), ephemeral=True)
         return
-    await inter.response.send_message(getLang(inter, section='Translation', line='REMOVE_ROLE_SUCCESS').format(role.mention, member.mention))
+    if inter.locale == 'ko':
+        tempF = getLang(inter, section='Translation', line='REMOVE_ROLE_SUCCESS').format(member.mention, role.mention)
+    else:
+        tempF = getLang(inter, section='Translation', line='REMOVE_ROLE_SUCCESS').format(role.mention, member.mention)
+    await inter.response.send_message(tempF)
     database_update("remove", user=member.id, role=role.id)
     await member.remove_roles(role, reason=f'Role removed by {inter.author} ({inter.author.id})')
 
@@ -210,7 +214,11 @@ async def removeroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role
     if role.name == '@everyone':
         await inter.response.send_message(getLang(inter, section='Translation', line=f'REMOVE_ROLE_FAILED_EVERYONE'), ephemeral=True)
         return
-    await inter.response.send_message(getLang(inter, section='Translation', line='REMOVE_ROLE_SUCCESS').format(role.mention, member.mention))
+    if inter.locale == 'ko':
+        tempF = getLang(inter, section='Translation', line='REMOVE_ROLE_SUCCESS').format(member.mention, role.mention)
+    else:
+        tempF = getLang(inter, section='Translation', line='REMOVE_ROLE_SUCCESS').format(role.mention, member.mention)
+    await inter.response.send_message(tempF)
     database_update("remove", user=member.id, roleIcon=role.id)
     await member.remove_roles(role, reason=f'Role removed by {inter.author} ({inter.author.id})')
 
@@ -606,11 +614,11 @@ def database_update(action, user, role=None, roleIcon=None):
 @bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
-        await ctx.send(getLang(ctx, 'Translate', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
+        await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
         return
 
     await ctx.send(
-        getLang(ctx, 'Translate', 'EQUIP_ROLE_SUCCESS').format(error))
+        getLang(ctx, 'Translation', 'COMMAND_FAILED_UNKNOWN_ERROR').format(error))
     print(error)
 
 bot.run(open('token.txt', 'r').read())
