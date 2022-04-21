@@ -13,9 +13,9 @@ bot = commands.Bot(command_prefix='unused lol', intents=intents,
                    allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
 guilds = [770428394918641694, 296802696243970049]
 rarities = ['Unique', 'Strange', 'Unusual', 'Collector\'s', 'Vintage', 'Normal', 'Decorated', 'Self-Made', 'VALVE',
-            'noun', 'Community', 'Haunted', 'Genuine', 'Untradeable', 'Uncraftable', 'Common', 'Mythic', 'Rare',
-            'LEGENDARY', 'Uncued', 'Bliv']
-
+            'noun', 'Community', 'Haunted', 'Genuine', 'Untradable', 'Uncraftable', 'Common', 'Mythic', 'Rare',
+            'LEGENDARY', 'Uncued', 'Bliv', 'Cringe', 'Battleworn', 'Smokin\'', 'Smelly', 'Suspicious', 'DCUR', 'Medically Trained',
+            'Dongulated', 'Peer Reviewed', 'Verified', 'Non-Canon']
 
 @bot.user_command(name='View Roles', guild_ids=guilds)
 async def view_role_context(inter):
