@@ -1,3 +1,4 @@
+import configparser
 import json
 import operator
 import sqlite3
@@ -31,8 +32,12 @@ def getLang(inter, section, line):
 
     lang = ConfigParser()
     lang.read(file, encoding='utf-8')
-    lineStr = lang.get(section, line)
-
+    try:
+        lineStr = lang.get(section, line)
+    except configparser.NoOptionError:
+        file = languages['en-US']
+        lang.read(file, encoding='utf-8')
+        lineStr = lang.get(section, line)
     return lineStr
 
 @bot.user_command(name='View Roles', guild_ids=guilds)
@@ -334,6 +339,11 @@ async def list_specific_role(inter, role):
     await inter.edit_original_message(embed=embed)
 
 
+@bot.slash_command(name='store', description='Stores all your eligible roles & icons in your Roler Mobster Inventory')
+@commands.cooldown(1, 86400, commands.BucketType.user)
+async def store(inter):
+    await dongulate(inter, user=inter.author)
+
 @bot.slash_command(name='dongulate', description='Adds all valid roles to a user.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def dongulate(inter, user: disnake.User):
@@ -367,8 +377,9 @@ async def dongulate(inter, user: disnake.User):
             roleIcons_to_add.append(r)
             database_update('add', user.id, roleIcon=r.id)
 
-    betarole = inter.guild.get_role(965347079708897350)
-    await user.add_roles(betarole, reason='Dongulated.')
+    if inter.guild.id == 296802696243970049:
+        betarole = inter.guild.get_role(965347079708897350)
+        await user.add_roles(betarole, reason='Dongulated.')
     await user.remove_roles(*roles_to_add, reason='All valid roles added to user inventory.')
     await user.remove_roles(*roleIcons_to_add, reason='All valid role icons added to user inventory.')
     await inter.response.send_message(getLang(inter, 'Translation', 'DONGULATE_SUCCESS').format(user.mention))
@@ -616,7 +627,9 @@ async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
         return
-
+    elif isinstance(error, disnake.ext.commands.CommandOnCooldown):
+        await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_COOLDOWN'), ephemeral=True)
+        return
     await ctx.send(
         getLang(ctx, 'Translation', 'COMMAND_FAILED_UNKNOWN_ERROR').format(error))
     print(error)
