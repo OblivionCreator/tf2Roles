@@ -519,7 +519,7 @@ async def on_role_select(inter):
     await inter.response.send_message(embed=embed, ephemeral=True)
 
 
-@bot.slash_command(name='equipall', description='Equips all of your roles at once. (If you have a lot of roles, this may take some time!)')
+@bot.slash_command(name='equipall', description='Equips all of your roles at once. (If you have a lot of roles, this may take some time!)',guilds_ids=guilds)
 async def equipall(inter):
     await inter.response.defer(ephemeral=True)
     roles, icons = get_user_roles(inter.author.id)
