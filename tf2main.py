@@ -131,7 +131,7 @@ async def _roles(inter, type, returnEmbed = False,
     for i in true_items_shortened:
         roleStrList = f'{roleStrList}\n{i.mention}'
     if len(true_items) > len(true_items_shortened):
-        roleStrList = f'{roleStrList}**({(page-1)*25}-{len(true_items_shortened)}/{len(true_items)})**'
+        roleStrList = f'{roleStrList}\n**({((page-1)*25)+1}-{(((page-1)*25)+1)+len(true_items_shortened)-1})**'
 
         if true_items[-1] == true_items_shortened[-1] and len(true_items) > 25:
             pageDown = disnake.ui.Button(label='<-', custom_id=f'{shortType}_{page-1}', style=1)
@@ -518,6 +518,22 @@ async def on_role_select(inter):
                           color=role.color)
     await inter.response.send_message(embed=embed, ephemeral=True)
 
+
+@bot.slash_command(name='equipall', description='Equips all of your roles at once. (If you have a lot of roles, this may take some time!)')
+async def equipall(inter):
+    await inter.response.defer(ephemeral=True)
+    roles, icons = get_user_roles(inter.author.id)
+    all_roles = roles + icons
+    role_list = []
+
+    for r in all_roles:
+        role_list.append(inter.guild.get_role(r))
+    try:
+        await inter.author.add_roles(*role_list)
+        await inter.edit_original_message(content=getLang(inter, 'Translation', 'EQUIP_ALL_ROLE_SUCCESS').format(len(all_roles)))
+    except Exception as e:
+        await inter.edit_original_message(content=getLang(inter, 'Translation', 'EQUIP_ALL_ROLE_FAILED_ERROR_GENERIC'))
+
 @bot.listen("on_button_click")
 async def on_page_click(inter):
     custom_id = inter.data.custom_id
@@ -622,7 +638,7 @@ def database_update(action, user, role=None, roleIcon=None):
     conn.commit()
 
 
-@bot.listen()
+#@bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
