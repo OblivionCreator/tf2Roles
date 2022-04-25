@@ -245,6 +245,11 @@ async def listall(inter, role: disnake.Role = None):
     items = cur.fetchall()
     allRoles = []
     allIcons = []
+    user_count = 0
+
+    sql2 = '''SELECT COUNT(*) FROM roles'''
+    cur.execute(sql2)
+    user_total, = cur.fetchone()
 
     for i in items:
         usr, temp1, temp2 = i
@@ -258,6 +263,7 @@ async def listall(inter, role: disnake.Role = None):
                 allRoles.append(t1)
             for t2 in temp2:
                 allIcons.append(t2)
+            user_count += 1
 
     roleCount = {}
     iconCount = {}
@@ -302,7 +308,7 @@ async def listall(inter, role: disnake.Role = None):
     embed.set_footer(text=getLang(inter, 'Translation', 'LIST_ALL_ROLES_FOOTER'))
     embed2 = disnake.Embed(title=getLang(inter, 'Translation', 'LIST_ALL_ICONS'), description=roleIconStr)
     embed2.color = color2
-    embed2.set_footer(text=getLang(inter, 'Translation', 'LIST_ALL_ICONS_FOOTER'))
+    embed2.set_footer(text=getLang(inter, 'Translation', 'LIST_ALL_ICONS_FOOTER').format(user_count, user_total))
 
     await inter.edit_original_message(embeds=[embed, embed2])
 
