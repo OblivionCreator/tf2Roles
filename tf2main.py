@@ -11,6 +11,13 @@ intents = disnake.Intents.default()
 intents.guilds = True
 intents.presences = True
 
+masterRoles = {
+    298698700719521795: 298698201270059009,  # Rhythm Maestro -> Sushi Maestro
+    409552655623389185: 409551428814635008,  # Rhythm Master -> Sushi Master
+    819428632447287296: 517143533853868074,  # Cafe Champion -> Cafe Regular
+    517143533853868074: 517143450391543818,  # Cafe Regular -> Cafe Visitor
+}
+
 bot = commands.Bot(command_prefix='unused lol', intents=intents,
                    allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
 guilds = [770428394918641694, 296802696243970049]
@@ -169,6 +176,7 @@ async def _roles(inter, type, returnEmbed = False,
 @bot.slash_command(description='Assigns a role to a user.', name='giverole', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
+    roles_to_add = [role.id]
     if role.name == '@everyone':
         await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_FAILED_EVERYONE'), ephemeral=True)
         return
@@ -179,7 +187,13 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
         return
 
     await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_SUCCESS').format(member.mention, role.mention))
-    database_update("add", user=member.id, role=role.id)
+
+    for i in roles_to_add:
+        if i in masterRoles:
+            roles_to_add.append(masterRoles[i])
+
+    for x in roles_to_add:
+        database_update("add", user=member.id, role=x)
 
 
 @bot.slash_command(description='Removes a role from a user.', name='removerole', guild_ids=guilds)
@@ -356,13 +370,6 @@ async def dongulate(inter, user: disnake.User):
     roleIDs, roleIconIDs = get_user_roles(0)
     roles_to_add = []
     roleIcons_to_add = []
-
-    masterRoles = {
-        298698700719521795:298698201270059009, #Rhythm Maestro -> Sushi Maestro
-        409552655623389185:409551428814635008, #Rhythm Master -> Sushi Master
-        819428632447287296:517143533853868074, #Cafe Champion -> Cafe Regular
-        517143533853868074:517143450391543818, #Cafe Regular -> Cafe Visitor
-    }
 
     addedRoles = []
 
