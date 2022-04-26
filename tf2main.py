@@ -102,7 +102,11 @@ async def _roles(inter, type, returnEmbed = False,
 
     for r in itemList:
         try:
-            true_items.append(guild.get_role(r))
+            role = guild.get_role(r)
+            if role is None:
+                database_update('remove', id, role=r)
+            else:
+                true_items.append(role)
         except Exception as e:
             print(e)
 
