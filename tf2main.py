@@ -176,6 +176,8 @@ async def _roles(inter, type, returnEmbed = False,
 @bot.slash_command(description='Assigns a role to a user.', name='giverole', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
+    global masterRoles
+
     roles_to_add = [role.id]
     if role.name == '@everyone':
         await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_FAILED_EVERYONE'), ephemeral=True)
