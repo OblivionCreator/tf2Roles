@@ -399,8 +399,8 @@ async def dongulate(inter, user: disnake.User):
     if inter.guild.id == 296802696243970049:
         betarole = inter.guild.get_role(965347079708897350)
         await user.add_roles(betarole, reason='Dongulated.')
-    await user.remove_roles(*roles_to_add, reason='All valid roles added to user inventory.')
-    await user.remove_roles(*roleIcons_to_add, reason='All valid role icons added to user inventory.')
+    await user.remove_roles(*roles_to_add[1:], reason='All valid roles added to user inventory.')
+    await user.remove_roles(*roleIcons_to_add[1:], reason='All valid role icons added to user inventory.')
     await inter.response.send_message(getLang(inter, 'Translation', 'DONGULATE_SUCCESS').format(user.mention))
 
 
