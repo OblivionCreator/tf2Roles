@@ -398,6 +398,7 @@ async def store(inter):
 @bot.slash_command(name='dongulate', description='Adds all valid roles to a user.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def dongulate(inter, user: disnake.User):
+    await inter.response.defer()
     roleIDs, roleIconIDs = get_user_roles(0)
     roles_to_add = []
     roleIcons_to_add = []
@@ -428,7 +429,7 @@ async def dongulate(inter, user: disnake.User):
 
     await user.remove_roles(*roles_to_add[1:], reason='All valid roles added to user inventory.')
     await user.remove_roles(*roleIcons_to_add[1:], reason='All valid role icons added to user inventory.')
-    await inter.response.send_message(getLang(inter, 'Translation', 'DONGULATE_SUCCESS').format(user.mention))
+    await inter.edit_original_message(content=getLang(inter, 'Translation', 'DONGULATE_SUCCESS').format(user.mention))
 
 
 @bot.slash_command(name='blacklist', description='Adds a role to the blacklist, forbidding it from being assigned.',
@@ -699,7 +700,7 @@ def database_update(action, user, role=None, roleIcon=None):
     conn.commit()
 
 
-# @bot.listen()
+@bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
