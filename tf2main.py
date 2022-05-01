@@ -212,7 +212,7 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
 
     for i in roles_to_add:
         if i in masterRoles:
-            for pri, sec in masterRoles:
+            for pri, sec in masterRoles.items():
                 if pri == i:
                     roles_to_add.append(masterRoles[sec])
 
@@ -412,7 +412,7 @@ async def dongulate(inter, user: disnake.User):
             r = inter.guild.get_role(538496816845553704)
 
         if r.id in masterRoles:
-            for pri, sec in masterRoles:
+            for pri, sec in masterRoles.items():
                 if pri == r.id:
                     role = inter.guild.get_role(sec)
                     if role not in userRoles:
