@@ -418,6 +418,7 @@ async def dongulate(inter, user: disnake.User):
                 print(pri, sec)
                 role = inter.guild.get_role(sec)
                 if role not in userRoles:
+                    print("added")
                     userRoles.append(role)
 
         if r.id in roleIDs:
