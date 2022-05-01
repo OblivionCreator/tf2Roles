@@ -168,7 +168,7 @@ async def _roles(inter, type, returnEmbed=False,
     if id == 9:
         embTitle = getLang(inter, section='Translation', line='ROLES_LIST_BLACKLIST').format(len(true_items),
                                                                                              type_plural)
-    if user and not isinstance(user, int):
+    elif user and not isinstance(user, int):
         embTitle = getLang(inter, section='Translation', line='ROLES_LIST_USER').format(user.name, len(true_items),
                                                                                         type_plural)
     else:
@@ -484,11 +484,11 @@ async def assign_role(inter, role: disnake.Role):
 
 @bot.slash_command(name='viewblacklist', description='Lists all blacklisted roles and role icons.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
-async def vw_bl(inter):
+async def vw_bl(inter, page:int=1):
     user = 9
     await inter.response.defer()
-    embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user)
-    embed2 = await _roles(inter, 'Icon', returnEmbed=True, user=user)
+    embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user, page=page)
+    embed2 = await _roles(inter, 'Icon', returnEmbed=True, user=user, page=page)
     await inter.edit_original_message(embeds=[embed1, embed2])
 
 
