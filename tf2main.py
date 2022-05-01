@@ -211,8 +211,8 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
         getLang(inter, section='Translation', line=f'GIVE_ROLE_SUCCESS').format(member.mention, role.mention))
 
     for i in roles_to_add:
-        for x in masterRoles:
-            pri, sec = x
+        for ix in masterRoles:
+            pri, sec = ix
             if pri == i:
                 roles_to_add.append(sec)
 
@@ -415,6 +415,7 @@ async def dongulate(inter, user: disnake.User):
         for i in masterRoles:
             pri, sec = i
             if pri == r.id:
+                print(pri, sec)
                 role = inter.guild.get_role(sec)
                 if role not in userRoles:
                     userRoles.append(role)
