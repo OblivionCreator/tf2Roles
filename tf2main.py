@@ -11,16 +11,16 @@ intents = disnake.Intents.default()
 intents.guilds = True
 intents.presences = True
 
-masterRoles = {
-    298698700719521795: 298698201270059009,  # Rhythm Maestro -> Sushi Maestro
-    409552655623389185: 409551428814635008,  # Rhythm Master -> Sushi Master
-    819428632447287296: 517143533853868074,  # Cafe Champion -> Cafe Regular
-    517143533853868074: 517143450391543818,  # Cafe Regular -> Cafe Visitor
-    538179836531834906: 966298129362202624,  # Fiery Aficionado (top) -> Fiery Adept
-    538496816845553704: 966298129362202624,  # Fiery Aficionado (btm) -> Fiery Adept
-    966298455205097542: 538496816845553704,  # Lantern Voyager -> Fiery Aficionado (btm)
-    966298455205097542: 966298334757257216   # Lantern Voyager -> Fiery Virtuoso
-}
+masterRoles = [
+    (298698700719521795, 298698201270059009),  # Rhythm Maestro -> Sushi Maestro
+    (409552655623389185, 409551428814635008),  # Rhythm Master -> Sushi Master
+    (819428632447287296, 517143533853868074),  # Cafe Champion -> Cafe Regular
+    (517143533853868074, 517143450391543818),  # Cafe Regular -> Cafe Visitor
+    (538179836531834906, 966298129362202624),  # Fiery Aficionado (top) -> Fiery Adept
+    (538496816845553704, 966298129362202624),  # Fiery Aficionado (btm) -> Fiery Adept
+    (966298455205097542, 538496816845553704),  # Lantern Voyager -> Fiery Aficionado (btm)
+    (966298455205097542, 966298334757257216)   # Lantern Voyager -> Fiery Virtuoso
+]
 
 bot = commands.Bot(command_prefix='unused lol', intents=intents,
                    allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
@@ -211,10 +211,10 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
         getLang(inter, section='Translation', line=f'GIVE_ROLE_SUCCESS').format(member.mention, role.mention))
 
     for i in roles_to_add:
-        if i in masterRoles:
-            for pri, sec in masterRoles.items():
-                if pri == i:
-                    roles_to_add.append(masterRoles[sec])
+        for x in masterRoles:
+            pri, sec = x
+            if pri == i:
+                roles_to_add.append(sec)
 
     for x in roles_to_add:
         database_update("add", user=member.id, role=x)
@@ -411,12 +411,12 @@ async def dongulate(inter, user: disnake.User):
         if r.id == 538179836531834906:
             r = inter.guild.get_role(538496816845553704)
 
-        if r.id in masterRoles:
-            for pri, sec in masterRoles.items():
-                if pri == r.id:
-                    role = inter.guild.get_role(sec)
-                    if role not in userRoles:
-                        userRoles.append(role)
+        for i in masterRoles:
+            pri, sec = i
+            if pri == r.id:
+                role = inter.guild.get_role(sec)
+                if role not in userRoles:
+                    userRoles.append(role)
 
         if r.id in roleIDs:
             roles_to_add.append(r)
