@@ -168,7 +168,7 @@ async def _roles(inter, type, returnEmbed=False,
     if id == 9:
         embTitle = getLang(inter, section='Translation', line='ROLES_LIST_BLACKLIST').format(len(true_items),
                                                                                              type_plural)
-    if user:
+    if user and not isinstance(user, int):
         embTitle = getLang(inter, section='Translation', line='ROLES_LIST_USER').format(user.name, len(true_items),
                                                                                         type_plural)
     else:
@@ -706,7 +706,7 @@ def database_update(action, user, role=None, roleIcon=None):
     conn.commit()
 
 
-@bot.listen()
+#@bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
