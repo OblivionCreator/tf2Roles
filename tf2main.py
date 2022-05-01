@@ -407,18 +407,19 @@ async def dongulate(inter, user: disnake.User):
 
     userRoles = user.roles
 
+    dupeRole = None
+
     for r in userRoles:
 
         if r.id == 538179836531834906:
+            dupeRole = r
             r = inter.guild.get_role(538496816845553704)
-
         for i in masterRoles:
             pri, sec = i
             if pri == r.id:
                 print(pri, sec)
                 role = inter.guild.get_role(sec)
                 if role not in userRoles:
-                    print("added")
                     userRoles.append(role)
 
         if r.id in roleIDs:
@@ -428,6 +429,9 @@ async def dongulate(inter, user: disnake.User):
         if r.id in roleIconIDs:
             roleIcons_to_add.append(r)
             database_update('add', user.id, roleIcon=r.id)
+
+    if dupeRole:
+        roles_to_add.append(dupeRole)
 
     await user.remove_roles(*roles_to_add[1:], reason='All valid roles added to user inventory.')
     await user.remove_roles(*roleIcons_to_add[1:], reason='All valid role icons added to user inventory.')
