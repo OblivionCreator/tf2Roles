@@ -20,7 +20,7 @@ masterRoles = [
     (538496816845553704, 966298129362202624),  # Fiery Aficionado (btm) -> Fiery Adept
     (966298455205097542, 538496816845553704),  # Lantern Voyager -> Fiery Aficionado (btm)
     (966298455205097542, 966298334757257216),  # Lantern Voyager -> Fiery Virtuoso
-    (819428632447287296	, 973061504180035644), # Café Champion -> Café Addict
+    (819428632447287296, 973061504180035644),  # Café Champion -> Café Addict
     (973061504180035644, 517143533853868074),  # Café Addict -> Café Regular
     (973066531082764298, 973066015447613460),  # Prompt Pioneer -> Prompt Participator
     (973066015447613460, 973063466678112286),  # Prompt Participator -> Prompt Peruser
