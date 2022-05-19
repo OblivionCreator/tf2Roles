@@ -1,0 +1,57 @@
+{
+  "VIEWROLES": "View Roles",
+  "VIEWICONS": "View Role Icons",
+
+  "ROLES_NAME": "roles",
+  "ROLES_DESCRIPTION": "Allows you to manage your active role, or view the roles of other users.",
+  "MEMBER_NAME": "member",
+  "MEMBER_DESCRIPTION": "Server Member",
+  "ROLE_NAME": "role",
+  "ROLE_DESCRIPTION": "Server Role",
+
+  "PAGE_NAME": "page",
+  "PAGE_DESCRIPTION": "Page Number",
+
+  "ICONS_NAME": "icons",
+  "ICONS_DESCRIPTION": "Allows you to manage your active role icon, or view the role icons of other users.",
+
+  "ADDROLE_NAME": "giverole",
+  "ADDROLE_DESCRIPTION": "Adds a role to a user's Role Inventory.",
+
+  "REMOVEROLE_NAME": "removerole",
+  "REMOVEROLE_DESCRIPTION": "Removes a role from a user's Role Inventory.",
+
+  "ADDICON_NAME": "giveicon",
+  "ADDICON_DESCRIPTION": "Adds a role icon to a user's Icon Inventory.",
+
+  "REMOVEICON_NAME": "removeicon",
+  "REMOVEICON_DESCRIPTION": "Removes a role from a user's Role Icon Inventory.",
+
+  "LISTALL_NAME": "listall",
+  "LISTALL_DESCRIPTION": "Lists the number of members who have each role or list what members own each role.",
+
+  "STORE_NAME": "store",
+  "STORE_DESCRIPTION": "Adds all of your roles to your Role Inventory.",
+
+
+  "DONGULATE_NAME": "dongulate",
+  "DONGULATE_DESCRIPTION": "Adds all valid roles to a user's Role Inventory.",
+
+  "BLACKLIST_NAME": "blacklist",
+  "BLACKLIST_DESCRIPTION": "Adds a role to the blacklist, forbidding it from being assigned.",
+
+  "ASSIGNROLE_NAME": "assignrole",
+  "ASSIGNROLE_DESCRIPTION": "Adds or removes a role from the Dongulatable roles.",
+
+  "VIEWBLACKLIST_NAME": "viewblacklist",
+  "VIEWBLACKLIST_DESCRIPTION": "Lists all blacklisted roles and role icons.",
+
+  "SHOWOFF_NAME": "show",
+  "SHOWOFF_DESCRIPTION": "Shows off your role inventory publicly!",
+
+  "ASSIGNICON_NAME": "assignicon",
+  "ASSIGNICON_DESCRIPTION": "Adds or removes a role from the Dongulatable roles.",
+
+  "EQUIPALL_NAME": "equipall",
+  "EQUIPALL_DESCRIPTION": "Equips all of your roles at once. (If you have a lot of roles, this may take some time!)"
+}

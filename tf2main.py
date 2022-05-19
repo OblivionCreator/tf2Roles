@@ -26,10 +26,8 @@ masterRoles = [
     (973066015447613460, 973063466678112286),  # Prompt Participator -> Prompt Peruser
 ]
 
-bot = commands.Bot(command_prefix='unused lol', intents=intents,
-                   allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
+bot = commands.InteractionBot(intents=intents, allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
 guilds = [770428394918641694, 296802696243970049]
-
 
 def getLang(inter, section, line):
     language = inter.locale
@@ -58,23 +56,45 @@ def getLang(inter, section, line):
 
 @bot.user_command(name='View Roles', guild_ids=guilds)
 async def view_role_context(inter):
+    """
+    {{VIEWROLES}}
+    """
     await _roles(inter, type='Role', user=inter.target)
 
 
 @bot.user_command(name='View Role Icons', guild_ids=guilds)
 async def view_roleicon_context(inter):
+    """
+    {{VIEWICONS}}
+    """
     await _roles(inter, type='Icon', user=inter.target)
 
 
-@bot.slash_command(description='Allows you to manage your active role, or view the roles of other users.', name='roles',
-                   guild_ids=guilds)
+@bot.slash_command(guild_ids=guilds)
 async def roles(inter, member: disnake.Member = None, page: int = 1):
+    """
+
+    {{ROLES}}
+
+    Parameters
+    ----------
+    member: Server Member {{MEMBER}}
+    page: Page Number {{PAGE}}
+    """
     await _roles(inter, type='Role', user=member, page=page)
 
 
 @bot.slash_command(description='Allows you to manage your active role icon, or view the role icons of other users.',
                    name='icons', guild_ids=guilds)
 async def roleicons(inter, member: disnake.Member = None, page: int = 1):
+    """
+    Allows you to manage your active role icon, or view the role icons of other users. {{ICONS}}
+
+    Parameters
+    ----------
+    member: Server Member {{MEMBER}}
+    page: Page Number {{PAGE}}
+    """
     await _roles(inter, type='Icon', user=member, page=page)
 
 
@@ -194,9 +214,18 @@ async def _roles(inter, type, returnEmbed=False,
         message = await inter.edit_original_message(embed=embed)
 
 
-@bot.slash_command(description='Assigns a role to a user.', name='giverole', guild_ids=guilds)
+@bot.slash_command(guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
+    """
+    Adds a role to a user's Role Inventory. {{ADDROLE}}
+
+    Parameters
+    ----------
+    member: Server Member {{MEMBER}}
+    role: Server Role {{ROLE}}
+    """
+
     global masterRoles
 
     roles_to_add = [role.id]
@@ -227,6 +256,14 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
 @bot.slash_command(description='Removes a role from a user.', name='removerole', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def removerole(inter, member: disnake.abc.User, role: disnake.abc.Role):
+    """
+    Removes a role to a user's Role Inventory. {{REMOVEROLE}}
+
+    Parameters
+    ----------
+    member: Server Member {{MEMBER}}
+    role: Server Role {{ROLE}}
+    """
     if role.name == '@everyone':
         await inter.response.send_message(getLang(inter, section='Translation', line=f'REMOVE_ROLE_FAILED_EVERYONE'),
                                           ephemeral=True)
@@ -243,6 +280,14 @@ async def removerole(inter, member: disnake.abc.User, role: disnake.abc.Role):
 @bot.slash_command(description='Gives an icon to a user.', name='giveicon', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def addroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role):
+    """
+    Adds a role to a user's Role Icon Inventory. {{ADDICON}}
+
+    Parameters
+    ----------
+    member: Server Member {{MEMBER}}
+    role: Server Role {{ROLE}}
+    """
     if role.name == '@everyone':
         await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_FAILED_EVERYONE'),
                                           ephemeral=True)
@@ -262,6 +307,14 @@ async def addroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role):
 @bot.slash_command(description='Removes an icon from a user.', name='removeicon', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def removeroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role):
+    """
+    Removes a role to a user's Role Icon Inventory. {{ADDICON}}
+
+    Parameters
+    ----------
+    member: Server Member {{MEMBER}}
+    role: Server Role {{ROLE}}
+    """
     if role.name == '@everyone':
         await inter.response.send_message(getLang(inter, section='Translation', line=f'REMOVE_ROLE_FAILED_EVERYONE'),
                                           ephemeral=True)
@@ -278,6 +331,13 @@ async def removeroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role
 @bot.slash_command(description='Shows All Role Assignments', name='listroles', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def listall(inter, role: disnake.Role = None):
+    """
+    Lists the number of members who have each role or list what members own each role. {{LISTALL}}
+
+    Parameters
+    ----------
+    role: Server Role {{ROLE}}
+    """
     if role:
         return await list_specific_role(inter, role)
 
@@ -396,12 +456,26 @@ async def list_specific_role(inter, role):
 @bot.slash_command(name='store', description='Stores all your eligible roles & icons in your Roler Mobster Inventory')
 @commands.cooldown(1, 86400, commands.BucketType.user)
 async def store(inter):
+    """
+    Adds all of your roles to your Role Inventory. {{STORE}}
+
+    Parameters
+    ----------
+    role: Server Role {{ROLE}}
+    """
     await dongulate(inter, user=inter.author)
 
 
 @bot.slash_command(name='dongulate', description='Adds all valid roles to a user.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def dongulate(inter, user: disnake.User):
+    """
+     Adds all valid roles to a user's Role Inventory. {{DONGULATE}}
+
+    Parameters
+    ----------
+    role: Server Role {{ROLE}}
+    """
     await inter.response.defer()
     roleIDs, roleIconIDs = get_user_roles(0)
     roles_to_add = []
@@ -446,6 +520,13 @@ async def dongulate(inter, user: disnake.User):
                    guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def blacklist(inter, role: disnake.Role):
+    """
+     Adds a role to the blacklist, forbidding it from being assigned. {{BLACKLIST}}
+
+    Parameters
+    ----------
+    role: Server Role {{ROLE}}
+    """
     roleIDs, roleIconIDs = get_user_roles(9)
     roleA, roleIconA = get_user_roles(0)
     if role.id in roleIDs or role.id in roleIconIDs:
@@ -467,6 +548,13 @@ async def blacklist(inter, role: disnake.Role):
                    guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def assign_role(inter, role: disnake.Role):
+    """
+    Adds or removes a role from the Dongulatable roles. {{ASSIGNROLE}}
+
+    Parameters
+    ----------
+    role: Server Role {{ROLE}}
+    """
     roleIDs, trash = get_user_roles(0)
     bl_r, trash = get_user_roles(9)
     if role.id in bl_r:
@@ -489,6 +577,14 @@ async def assign_role(inter, role: disnake.Role):
 @bot.slash_command(name='viewblacklist', description='Lists all blacklisted roles and role icons.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def vw_bl(inter, page:int=1):
+    """
+    Lists all blacklisted roles and role icons. {{VIEWBLACKLIST}}
+
+    Parameters
+    ----------
+    role: Server Role {{ROLE}}
+    page: Page Number {{PAGE}}
+    """
     user = 9
     await inter.response.defer()
     embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user, page=page)
@@ -497,11 +593,19 @@ async def vw_bl(inter, page:int=1):
 
 
 @bot.slash_command(name='show', description='Shows off your role inventory publicly!', guild_ids=guilds)
-async def showoff(inter):
+async def showoff(inter, page:int=1):
+    """
+    Shows off your role inventory publicly! {{SHOWOFF}}
+
+    Parameters
+    ----------
+    role: Server Role {{ROLE}}
+    page: Page Number {{PAGE}}
+    """
     await inter.response.defer()
     user = inter.author
-    embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user)
-    embed2 = await _roles(inter, 'Icon', returnEmbed=True, user=user)
+    embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user, page=page)
+    embed2 = await _roles(inter, 'Icon', returnEmbed=True, user=user, page=page)
     await inter.edit_original_message(embeds=[embed1, embed2])
 
 
@@ -509,6 +613,13 @@ async def showoff(inter):
                    guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def assign_role_icon(inter, role: disnake.Role):
+    """
+        Adds or removes a role icon from the Dongulatable roles.' {{ASSIGNICON}}
+
+        Parameters
+        ----------
+        role: Server Role {{ROLE}}
+    """
     trash, roleIconIDs = get_user_roles(0)
     bl_r, trash = get_user_roles(9)
     if role.id in bl_r:
@@ -590,6 +701,9 @@ async def on_role_select(inter):
                    description='Equips all of your roles at once. (If you have a lot of roles, this may take some time!)',
                    guilds_ids=guilds)
 async def equipall(inter):
+    """
+        Equips all of your roles at once. (If you have a lot of roles, this may take some time!) {{EQUIPALL}}
+    """
     await inter.response.defer(ephemeral=True)
     roles, icons = get_user_roles(inter.author.id)
     all_roles = roles + icons
@@ -710,7 +824,7 @@ def database_update(action, user, role=None, roleIcon=None):
     conn.commit()
 
 
-#@bot.listen()
+@bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
@@ -722,5 +836,5 @@ async def on_slash_command_error(ctx, error):
         getLang(ctx, 'Translation', 'COMMAND_FAILED_UNKNOWN_ERROR').format(error))
     print(error)
 
-
+bot.i18n.load("translation/locale/")
 bot.run(open('token.txt', 'r').read())
