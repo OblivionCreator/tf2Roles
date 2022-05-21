@@ -710,7 +710,7 @@ def database_update(action, user, role=None, roleIcon=None):
     conn.commit()
 
 
-#@bot.listen()
+@bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
