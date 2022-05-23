@@ -25,7 +25,7 @@ masterRoles = [
     (966298455205097542, 973064417493266452),  # Lantern Voyager -> Universal Royalty
     (973066531082764298, 973066015447613460),  # Prompt Pioneer -> Prompt Participator
     (973066015447613460, 973063466678112286),  # Prompt Participator -> Prompt Peruser
-    (331630636299452446, 978000113786028164),  # Winner -> Compo Finalist
+    (331630636299452446, 978000113786028164)  # Winner -> Compo Finalist
 ]
 
 bot = commands.Bot(command_prefix='unused lol', intents=intents,
