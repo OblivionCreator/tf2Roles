@@ -14,6 +14,7 @@ intents.presences = True
 masterRoles = [
     (298698700719521795, 298698201270059009),  # Rhythm Maestro -> Sushi Maestro
     (409552655623389185, 409551428814635008),  # Rhythm Master -> Sushi Master
+    (966299552112062494, 409551428814635008),  # Rhythm Completionist -> Sushi Master
     (819428632447287296, 973061504180035644),  # Café Champion -> Café Addict
     (973061504180035644, 517143533853868074),  # Café Addict -> Café Regular
     (517143533853868074, 517143450391543818),  # Cafe Regular -> Cafe Visitor
@@ -24,6 +25,7 @@ masterRoles = [
     (966298455205097542, 973064417493266452),  # Lantern Voyager -> Universal Royalty
     (973066531082764298, 973066015447613460),  # Prompt Pioneer -> Prompt Participator
     (973066015447613460, 973063466678112286),  # Prompt Participator -> Prompt Peruser
+    (331630636299452446, 978000113786028164),  # Winner -> Compo Finalist
 ]
 
 bot = commands.Bot(command_prefix='unused lol', intents=intents,
