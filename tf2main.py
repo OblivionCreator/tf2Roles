@@ -367,30 +367,58 @@ async def list_specific_role(inter, role):
 
     roleID = role.id
 
-    sql = f'''SELECT * FROM roles WHERE role LIKE '%{roleID}%' OR roleicon LIKE '%{roleID}%' '''
+    sql = f'''SELECT * FROM roles WHERE role LIKE '%{roleID}%' '''
     cur.execute(sql)
+    roleItems = cur.fetchall()
 
-    items = cur.fetchall()
-    userList = []
-    if len(items) > 0:
-        for i in items:
-            user, trash1, trash2 = i
-            userObj = await inter.guild.get_or_fetch_member(user)
-            # print(userObj, user)
-            if userObj:
-                userList.append(userObj)
-    allUserStr = ''
-    if len(userList) > 0:
-        for au in userList:
-            allUserStr = f'{allUserStr}\n{au.name} ({au.mention})'
-            if len(allUserStr) > 4000:
-                allUserStr = f'{allUserStr}\n{getLang(inter, "Translation", "LIST_ALL_OVERFLOW").format((len(userList) - userList.index(au)))}'
+    sql2 = f'''SELECT * FROM roles WHERE roleicon LIKE '%{roleID}%' '''
+    cur.execute(sql2)
+    iconItems = cur.fetchall()
+
+    userRoleList = []
+    userIconList = []
+
+    for i in roleItems:
+        user, trash1, trash2 = i
+        userObj = await inter.guild.get_or_fetch_member(user)
+        # print(userObj, user)
+        if userObj:
+            userRoleList.append(userObj)
+            
+    for i in iconItems:
+        user, trash1, trash2 = i
+        userObj = await inter.guild.get_or_fetch_member(user)
+        # print(userObj, user)
+        if userObj:
+            userIconList.append(userObj)
+    
+    embeds = []
+    
+    allUserRoleStr = ''
+    if len(userRoleList) > 0:
+        for au in userRoleList:
+            allUserRoleStr = f'{allUserRoleStr}\n{au.name} ({au.mention})'
+            if len(allUserRoleStr) > 4000:
+                allUserRoleStr = f'{allUserRoleStr}\n{getLang(inter, "Translation", "LIST_ALL_OVERFLOW").format((len(userRoleList) - userRoleList.index(au)))}'
                 break
-    else:
-        allUserStr = getLang(inter, 'Translation', 'LIST_ROLE_RETURN_NONE')
-    embed = disnake.Embed(title=getLang(inter, 'Translation', 'LIST_ROLE').format(role.name), description=allUserStr,
-                          color=role.color)
-    await inter.edit_original_message(embed=embed)
+        embeds.append(disnake.Embed(title=getLang(inter, 'Translation', 'LIST_ROLE').format(role.name), description=allUserRoleStr,
+                              color=role.color))
+    
+    allUserIconStr = ''
+    if userIconList > 0:
+        for au in userIconList:
+            allUserIconStr = f'{allUserIconStr}\n{au.name} ({au.mention})'
+            if len(allUserIconStr) > 4000:
+                allUserIconStr = f'{allUserIconStr}\n{getLang(inter, "Translation", "LIST_ALL_OVERFLOW").format((len(userIconList) - userIconList.index(au)))}'
+                break
+        embeds.append(disnake.Embed(title=getLang(inter, 'Translation', 'LIST_ICON').format(role.name), description=allUserIconStr,
+                                    color=role.color))
+    
+    if len(embeds) == 0:
+        embeds.append(disnake.Embed(title=getLang(inter, 'Translation', 'LIST_ROLE').format(role.name), description=getLang(inter, 'Translation', 'LIST_ROLE_RETURN_NONE'),
+                              color=role.color))
+
+    await inter.edit_original_message(embeds=embeds)
 
 
 @bot.slash_command(name='store', description='Stores all your eligible roles & icons in your Roler Mobster Inventory')
