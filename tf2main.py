@@ -405,7 +405,7 @@ async def list_specific_role(inter, role):
                               color=role.color))
     
     allUserIconStr = ''
-    if userIconList > 0:
+    if len(userIconList) > 0:
         for au in userIconList:
             allUserIconStr = f'{allUserIconStr}\n{au.name} ({au.mention})'
             if len(allUserIconStr) > 4000:
