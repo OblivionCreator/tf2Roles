@@ -28,8 +28,10 @@ masterRoles = [
     (331630636299452446, 978000113786028164)  # Winner -> Compo Finalist
 ]
 
-bot = commands.Bot(command_prefix='unused lol', intents=intents,
-                   allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
+activity = disnake.Game(name="ADOFAI: Neo Cosmos DLC Available Now!")
+
+bot = commands.InteractionBot(intents=intents,
+                   allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True), activity=activity)
 guilds = [770428394918641694, 296802696243970049]
 
 
