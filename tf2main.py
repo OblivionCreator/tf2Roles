@@ -25,7 +25,11 @@ masterRoles = [
     (966298455205097542, 973064417493266452),  # Lantern Voyager -> Universal Royalty
     (973066531082764298, 973066015447613460),  # Prompt Pioneer -> Prompt Participator
     (973066015447613460, 973063466678112286),  # Prompt Participator -> Prompt Peruser
-    (331630636299452446, 978000113786028164)  # Winner -> Compo Finalist
+    (983061892002086994, 983060833141674014),  # Stellar Sovereign -> Orbital Overseer
+    (983062281699098624, 983060833141674014),  # Neo Overlord -> Orbital Overseer
+    (983062659882680401, 983060833141674014),  # Cosmos Conqueror -> Orbital Overseer
+    (983062659882680401, 983061892002086994),  # Cosmos Conqueror -> Stellar Sovereign
+    (331630636299452446, 978000113786028164)   # Winner -> Compo Finalist
 ]
 
 activity = disnake.Game(name="ADOFAI: Neo Cosmos DLC Available Now!")
