@@ -305,13 +305,12 @@ async def listall(inter, role: disnake.Role = None):
     sql2 = '''SELECT COUNT(*) FROM roles'''
     cur.execute(sql2)
     user_total, = cur.fetchone()
+    
+    guild_member_ids = [member.id for member in inter.guild.members]
 
     for i in items:
-        usr, temp1, temp2 = i
-        member = await inter.guild.get_or_fetch_member(usr)
-        if member is None:
-            pass
-        else:
+        user, temp1, temp2 = i
+        if user in guild_member_ids:
             temp1 = json.loads(temp1)
             temp2 = json.loads(temp2)
             for t1 in temp1:
@@ -385,19 +384,17 @@ async def list_specific_role(inter, role):
 
     userRoleList = []
     userIconList = []
+    
+    guild_member_ids = [member.id for member in inter.guild.members]
 
     for i in roleItems:
         user, trash1, trash2 = i
-        userObj = await inter.guild.get_or_fetch_member(user)
-        # print(userObj, user)
-        if userObj:
+        if user in guild_member_ids:
             userRoleList.append(userObj)
             
     for i in iconItems:
         user, trash1, trash2 = i
-        userObj = await inter.guild.get_or_fetch_member(user)
-        # print(userObj, user)
-        if userObj:
+        if user in guild_member_ids:
             userIconList.append(userObj)
     
     embeds = []
