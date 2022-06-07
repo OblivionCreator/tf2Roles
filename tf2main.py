@@ -387,6 +387,7 @@ async def list_specific_role(inter, role):
     userIconList = []
     
     guild_member_ids = [member.id for member in inter.guild.members]
+    
     for i in roleItems:
         user, trash1, trash2 = i
         if user in guild_member_ids:
