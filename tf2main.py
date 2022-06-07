@@ -10,6 +10,7 @@ from configparser import ConfigParser
 intents = disnake.Intents.default()
 intents.guilds = True
 intents.presences = True
+intents.members = True
 
 masterRoles = [
     (298698700719521795, 298698201270059009),  # Rhythm Maestro -> Sushi Maestro
