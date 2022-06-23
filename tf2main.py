@@ -220,6 +220,13 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
         await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_FAILED_BLACKLIST'),
                                           ephemeral=True),
         return
+    
+    user_roles, trash = get_user_roles(member.id)
+    if role.id in user_roles:
+        await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_FAILED_EXISTS')
+                                          .format(member.mention, role.mention),
+                                          ephemeral=True),
+        return
 
     await inter.response.send_message(
         getLang(inter, section='Translation', line=f'GIVE_ROLE_SUCCESS').format(member.mention, role.mention))
@@ -241,6 +248,14 @@ async def removerole(inter, member: disnake.abc.User, role: disnake.abc.Role):
         await inter.response.send_message(getLang(inter, section='Translation', line=f'REMOVE_ROLE_FAILED_EVERYONE'),
                                           ephemeral=True)
         return
+    
+    user_roles, trash = get_user_roles(member.id)
+    if role.id not in user_roles:
+        await inter.response.send_message(getLang(inter, section='Translation', line=f'REMOVE_ROLE_FAILED_MISSING')
+                                          .format(member.mention, role.mention),
+                                          ephemeral=True)
+        return
+
     if inter.locale == 'ko':
         tempF = getLang(inter, section='Translation', line='REMOVE_ROLE_SUCCESS').format(member.mention, role.mention)
     else:
@@ -263,6 +278,13 @@ async def addroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role):
         await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_FAILED_BLACKLIST'),
                                           ephemeral=True)
         return
+    
+    trash, user_icons = get_user_roles(member.id)
+    if role.id in user_icons:
+        await inter.response.send_message(getLang(inter, section='Translation', line=f'GIVE_ROLE_FAILED_EXISTS')
+                                          .format(member.mention, role.mention),
+                                          ephemeral=True),
+        return
 
     await inter.response.send_message(
         getLang(inter, section='Translation', line=f'GIVE_ICON_SUCCESS').format(member.mention, role.mention))
@@ -276,6 +298,14 @@ async def removeroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role
         await inter.response.send_message(getLang(inter, section='Translation', line=f'REMOVE_ROLE_FAILED_EVERYONE'),
                                           ephemeral=True)
         return
+
+    trash, user_icons = get_user_roles(member.id)
+    if role.id not in user_icons:
+        await inter.response.send_message(getLang(inter, section='Translation', line=f'REMOVE_ROLE_FAILED_MISSING')
+                                          .format(member.mention, role.mention),
+                                          ephemeral=True)
+        return
+
     if inter.locale == 'ko':
         tempF = getLang(inter, section='Translation', line='REMOVE_ROLE_SUCCESS').format(member.mention, role.mention)
     else:
