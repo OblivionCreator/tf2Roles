@@ -1,6 +1,5 @@
 import configparser
 import json
-import operator
 import sqlite3
 import random
 import disnake
@@ -134,6 +133,8 @@ async def _roles(inter, type, returnEmbed=False,
     if page - 1 > (len(true_items)) / 25:
         page = 1
 
+    true_items.sort(reverse=True)
+    
     true_items_shortened = true_items[(page - 1) * 25:(page * 25)]
 
     aList = []
@@ -363,8 +364,8 @@ async def listall(inter, role: disnake.Role = None):
             iconCount[ri] = 0
         iconCount[ri] += 1
 
-    roleCount = sorted(roleCount.items(), key=operator.itemgetter(1), reverse=True)
-    iconCount = sorted(iconCount.items(), key=operator.itemgetter(1), reverse=True)
+    roleCount = sorted(roleCount.items(), key=lambda x: [x[1], inter.guild.get_role(x[0])], reverse=True)
+    iconCount = sorted(iconCount.items(), key=lambda x: [x[1], inter.guild.get_role(x[0])], reverse=True)
 
     color = 0x000000
     color2 = 0x000000
