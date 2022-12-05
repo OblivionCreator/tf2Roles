@@ -32,7 +32,7 @@ masterRoles = [
     (331630636299452446, 978000113786028164)   # Winner -> Compo Finalist
 ]
 
-default_role = 771070676638629948
+default_role = 1043036416260706324
 
 activity = disnake.Game(name="ADOFAI: Neo Cosmos DLC Available Now!")
 
