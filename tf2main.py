@@ -413,7 +413,7 @@ async def listall(inter, role: disnake.Role = None):
 
 
 async def list_specific_role(inter, role):
-    await inter.response.defer()
+    #await inter.response.defer()
     conn = sqlite3.connect('roles.db')
     cur = conn.cursor()
 
