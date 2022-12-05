@@ -32,7 +32,7 @@ masterRoles = [
     (331630636299452446, 978000113786028164)   # Winner -> Compo Finalist
 ]
 
-default_role = 831865797545951232
+default_role = 771070676638629948
 
 activity = disnake.Game(name="ADOFAI: Neo Cosmos DLC Available Now!")
 
@@ -638,7 +638,7 @@ async def on_role_select(inter):
         if r in memberRoleIDs:
             roleList.append(inter.guild.get_role(r))
 
-    if role_id != default_role:
+    if role_id != default_role and role in roleList:
         try:
             roleList.remove(role)
         except Exception as e:
@@ -672,7 +672,7 @@ async def on_role_select(inter):
         embed = disnake.Embed(title='Icon Removed',
                               description=getLang(inter, 'Translation', 'ICON_REMOVE_SUCCESS').format(role.mention),
                               color=role.color)
-    await inter.response.send_message(embed=embed, ephemeral=True)
+    await inter.followup.send(embed=embed, ephemeral=True)
 
 
 @bot.slash_command(name='equipall',
