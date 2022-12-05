@@ -213,6 +213,7 @@ async def _roles(inter, type, returnEmbed=False,
     if returnEmbed:
         return embed
     elif len(true_items) > 0 and not user:
+        print(aList)
         message = await inter.edit_original_message(components=aList, embed=embed)
     else:
         message = await inter.edit_original_message(embed=embed)
