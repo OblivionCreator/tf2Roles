@@ -148,6 +148,7 @@ async def _roles(inter, type, returnEmbed=False,
         Menu = disnake.ui.Select()
         options = []
         for r in true_items_shortened:
+            print(r.name, r.id)
             if r.id == default_role:
                 name = getLang(inter, 'Translation', 'NO_ICON')
                 desc = (getLang(inter, 'Translation', 'NO_ICON_DESC'))
@@ -413,7 +414,7 @@ async def listall(inter, role: disnake.Role = None):
 
 
 async def list_specific_role(inter, role):
-    #await inter.response.defer()
+    await inter.response.defer()
     conn = sqlite3.connect('roles.db')
     cur = conn.cursor()
 
