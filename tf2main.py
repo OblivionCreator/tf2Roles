@@ -172,8 +172,9 @@ async def _roles(inter, type, returnEmbed=False,
     PageUp = None
 
     true_length = len(true_items)
-    if true_items[0].id == default_role:
-        true_length = len(true_items)-1
+    if len(true_items) > 0:
+        if true_items[0].id == default_role:
+            true_length = len(true_items)-1
 
     for i in true_items_shortened:
         if i.id != default_role:
