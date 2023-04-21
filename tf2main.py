@@ -14,7 +14,7 @@ intents.members = True
 masterRoles = [
 ]
 
-default_role = 774530485174796298
+default_role = 1099102181606555699
 
 activity = disnake.Game(name="I'd like to see your Role Magement.")
 
