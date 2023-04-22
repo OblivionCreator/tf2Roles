@@ -573,9 +573,7 @@ async def showoff(inter):
     await inter.response.defer()
     user = inter.author
     embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user)
-    embed2 = await _roles(inter, 'Icon', returnEmbed=True, user=user)
-    await inter.edit_original_message(embeds=[embed1, embed2])
-
+    await inter.edit_original_message(embeds=[embed1])
 
 @bot.slash_command(name='assignicon', description='Adds or removes a role from the Dongulatable roles.',
                    guild_ids=guilds)
