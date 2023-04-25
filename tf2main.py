@@ -3,7 +3,7 @@ import json
 import sqlite3
 import random
 import disnake
-from disnake.ext import commands
+from disnake.ext import commands, tasks
 from configparser import ConfigParser
 
 intents = disnake.Intents.default()
@@ -790,7 +790,7 @@ def database_update(action, user, role=None, roleIcon=None):
     conn.commit()
 
 
-#@bot.listen()
+@bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
@@ -802,5 +802,21 @@ async def on_slash_command_error(ctx, error):
         getLang(ctx, 'Translation', 'COMMAND_FAILED_UNKNOWN_ERROR').format(error))
     print(error)
 
+@tasks.loop(minutes=5)
+async def changeStatus():
+    await statusChanger()
+
+async def statusChanger():
+    status = disnake.Status.online
+
+    from datetime import date
+
+    flavor = ["Obsessed with roles, and abhors Chaos.", "Tasque Manager blocks the way!", "Tasque Manager makes a list of her roles for the next year. She only has one role.", "Tasque Manager is writing \"manage tasks\" next to every entry in her daily planner.", "Tasque Manager is straightening her whip with a hair straightener.", "Tasque Manager is making herself take priority over the roles.", "Smells like live wiring"]
+
+    await bot.change_presence(activity=disnake.Game(random.choice(flavor)))
+
+@bot.event
+async def on_ready():
+    changeStatus.start()
 
 bot.run(open('token.txt', 'r').read())
