@@ -123,10 +123,11 @@ async def _roles(inter, type, returnEmbed=False,
             Menu1 = disnake.ui.Select()
             role_options = []
             for r in true_roles_shortened:
+                random.seed(f"{r.name}{inter.author.id}")
                 quality = random.choice(rarities)
                 level = random.randint(0, 100)
                 temp = disnake.SelectOption(label=r.name, value=f'ro_{r.id}',
-                                                description=getLang(inter, 'Translation', 'ITEM_RARITY').format(level, quality,r.name))
+                                                description=getLang(inter, 'Translation', 'ITEM_RARITY').format(level, quality,r.naame))
                 role_options.append(temp)
             Menu1.options = role_options
             Menu1.placeholder = "Select a Role!"
@@ -138,6 +139,7 @@ async def _roles(inter, type, returnEmbed=False,
             Menu2.placeholder = "Select a Role Icon!"
             icon_options = []
             for r in true_icons_shortened:
+                random.seed(f"{r.name}{inter.author.id}")
                 quality = random.choice(rarities)
                 level = random.randint(0, 100)
                 temp = disnake.SelectOption(label=r.name, value=f'ro_{r.id}',
