@@ -154,6 +154,7 @@ async def _roles(inter, type, returnEmbed=False,
                 desc = (getLang(inter, 'Translation', 'NO_ICON_DESC'))
                 temp = disnake.SelectOption(label=name, value=f'{shortType}_{r.id}', description=desc)
             else:
+                random.seed(f"{r.name}{inter.author.id}")
                 quality = random.choice(rarities)
                 level = random.randint(0, 100)
                 name = r.name
