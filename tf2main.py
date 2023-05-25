@@ -127,7 +127,7 @@ async def _roles(inter, type, returnEmbed=False,
                 quality = random.choice(rarities)
                 level = random.randint(0, 100)
                 temp = disnake.SelectOption(label=r.name, value=f'ro_{r.id}',
-                                                description=getLang(inter, 'Translation', 'ITEM_RARITY').format(level, quality,r.naame))
+                                                description=getLang(inter, 'Translation', 'ITEM_RARITY').format(level, quality,r.name))
                 role_options.append(temp)
             Menu1.options = role_options
             Menu1.placeholder = "Select a Role!"
