@@ -212,7 +212,7 @@ async def _roles(inter, type, returnEmbed=False,
         message = await inter.edit_original_message(embed=embed)
 
 
-@bot.slash_command(description='Assigns a role to a user.', name='giverole', guild_ids=guilds)
+@bot.slash_command(description='Assigns a role to a user.', name='giverole', guild_ids=guilds, aliases=['r'])
 @commands.has_permissions(manage_roles=True)
 async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
     global masterRoles
@@ -273,7 +273,7 @@ async def removerole(inter, member: disnake.abc.User, role: disnake.abc.Role):
     await member.remove_roles(role, reason=f'Role removed by {inter.author} ({inter.author.id})')
 
 
-@bot.slash_command(description='Gives an icon to a user.', name='giveicon', guild_ids=guilds)
+@bot.slash_command(description='Gives an icon to a user.', name='giveicon', guild_ids=guilds, aliases=['i'])
 @commands.has_permissions(manage_roles=True)
 async def addroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role):
     if role.name == '@everyone':
