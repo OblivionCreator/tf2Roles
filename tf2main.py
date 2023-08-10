@@ -108,6 +108,7 @@ async def _roles(inter, type, returnEmbed=False,
     else:
         id = inter.author.id
     roles, roleIcons = get_user_roles(id)
+
     guild = inter.guild
 
     true_items = []
@@ -184,10 +185,10 @@ async def _roles(inter, type, returnEmbed=False,
         roleStrList = f'{roleStrList}\n**({((page - 1) * 25) + 1}-{(((page - 1) * 25) + 1) + len(true_items_shortened) - 1})**'
 
         if true_items[-1] == true_items_shortened[-1] and len(true_items) > 25:
-            pageDown = disnake.ui.Button(label='<-', custom_id=f'{shortType}_{page - 1}', style=1)
+            pageDown = disnake.ui.Button(label='<-', custom_id=f'{shortType}_{page - 1}', style=disnake.ButtonStyle.blurple)
             aList.append(pageDown)
         if true_items[0] == true_items_shortened[0] and len(true_items) > 25:
-            pageUp = disnake.ui.Button(label='->', custom_id=f'{shortType}_{page + 1}', style=1)
+            pageUp = disnake.ui.Button(label='->', custom_id=f'{shortType}_{page + 1}', style=disnake.ButtonStyle.blurple)
             aList.append(pageUp)
 
     if true_length != 1:
