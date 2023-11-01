@@ -262,6 +262,17 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
     for x in roles_to_add:
         database_update("add", user=member.id, role=x)
 
+# @bot.slash_command(description='Updates your Roles & Assigns any Child Roles', name='update')
+# async def update_roles(inter):
+#     global masterRoles
+#
+#     user_roles = get_user_roles(inter.author.id)
+#
+#     for i in user_roles:
+#         for ix in masterRoles:
+#             pri, sec = ix
+#             if pri == i:
+#                 roles_to_add.append(sec)
 
 @bot.slash_command(description='Removes a role from a user.', name='removerole', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
@@ -491,6 +502,7 @@ async def store(inter):
 @bot.slash_command(name='dongulate', description='Adds all valid roles to a user.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def dongulate(inter, user: disnake.User):
+    global masterRoles
     await inter.response.defer()
     roleIDs, roleIconIDs = get_user_roles(0)
     roles_to_add = []
