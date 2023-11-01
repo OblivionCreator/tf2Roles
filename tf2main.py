@@ -523,6 +523,12 @@ async def dongulate(inter, user: disnake.User):
             roleIcons_to_add.append(r)
             database_update('add', user.id, roleIcon=r.id)
 
+        for i in roles_to_add:
+            for ix in masterRoles:
+                pri, sec = ix
+                if pri == i:
+                    roles_to_add.append(sec)
+
     if dupeRole:
         roles_to_add.append(dupeRole)
 
