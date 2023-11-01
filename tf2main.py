@@ -29,12 +29,16 @@ masterRoles = [
     (983062281699098624, 983060833141674014),  # Neo Overlord -> Orbital Overseer
     (983062659882680401, 983060833141674014),  # Cosmos Conqueror -> Orbital Overseer
     (983062659882680401, 983061892002086994),  # Cosmos Conqueror -> Stellar Sovereign
-    (331630636299452446, 978000113786028164)   # Winner -> Compo Finalist
+    (331630636299452446, 978000113786028164),   # Winner -> Compo Finalist
+    (409552655623389185, 1169051040662945803),  # Rhythm Master -> Samurai Master
+    (409552655623389185, 1169051235278671963),  # Rhythm Master -> Coffee Master
+    (409552655623389185, 1169051488916611093),  # Rhythm Master -> Multitasker Master
+    (409552655623389185, 1169051621586636891)  # Rhythm Master -> Conduction Master
 ]
 
 default_role = 831865797545951232
 
-activity = disnake.Game(name="ADOFAI: Neo Cosmos DLC Available Now!")
+activity = disnake.Game(name="Managing Roles since 1999!")
 
 bot = commands.InteractionBot(intents=intents,
                    allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True), activity=activity)
