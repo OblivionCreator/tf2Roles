@@ -494,7 +494,6 @@ async def list_specific_role(inter, role):
 
 
 @bot.slash_command(name='store', description='Stores all your eligible roles & icons in your Roler Mobster Inventory')
-@commands.cooldown(1, 86400, commands.BucketType.user)
 async def store(inter):
     await dongulate(inter, user=inter.author)
 
