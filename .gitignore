@@ -1,2 +1,4 @@
 /config/token.txt
 /config/roles.db
+/venv
+/config/parents.json

@@ -11,30 +11,7 @@ intents.guilds = True
 intents.presences = True
 intents.members = True
 
-masterRoles = [
-    (298698700719521795, 298698201270059009),  # Rhythm Maestro -> Sushi Maestro
-    (409552655623389185, 409551428814635008),  # Rhythm Master -> Sushi Master
-    (966299552112062494, 409551428814635008),  # Rhythm Completionist -> Sushi Master
-    (819428632447287296, 973061504180035644),  # Café Champion -> Café Addict
-    (973061504180035644, 517143533853868074),  # Café Addict -> Café Regular
-    (517143533853868074, 517143450391543818),  # Cafe Regular -> Cafe Visitor
-    (538496816845553704, 966298129362202624),  # Fiery Aficionado -> Fiery Adept
-    (966298455205097542, 538496816845553704),  # Lantern Voyager -> Fiery Aficionado
-    (966298455205097542, 966298334757257216),  # Lantern Voyager -> Fiery Virtuoso
-    (966298455205097542, 973065025709277214),  # Lantern Voyager -> Galactic Nobility
-    (966298455205097542, 973064417493266452),  # Lantern Voyager -> Universal Royalty
-    (973066531082764298, 973066015447613460),  # Prompt Pioneer -> Prompt Participator
-    (973066015447613460, 973063466678112286),  # Prompt Participator -> Prompt Peruser
-    (983061892002086994, 983060833141674014),  # Stellar Sovereign -> Orbital Overseer
-    (983062281699098624, 983060833141674014),  # Neo Overlord -> Orbital Overseer
-    (983062659882680401, 983060833141674014),  # Cosmos Conqueror -> Orbital Overseer
-    (983062659882680401, 983061892002086994),  # Cosmos Conqueror -> Stellar Sovereign
-    (331630636299452446, 978000113786028164),   # Winner -> Compo Finalist
-    (409552655623389185, 1169051040662945803),  # Rhythm Master -> Samurai Master
-    (409552655623389185, 1169051235278671963),  # Rhythm Master -> Coffee Master
-    (409552655623389185, 1169051488916611093),  # Rhythm Master -> Multitasker Master
-    (409552655623389185, 1169051621586636891)  # Rhythm Master -> Conduction Master
-]
+masterRoles: list = json.load(open('config/parents.json'))
 
 default_role = 831865797545951232
 
@@ -74,6 +51,37 @@ def getLang(inter, section, line):
 async def view_role_context(inter):
     await _roles(inter, type='Role', user=inter.target)
 
+@bot.slash_command(name='add_parent', guild_ids=guilds)
+@commands.has_permissions(manage_roles=True)
+async def add_parent(inter, parent:disnake.Role, child:disnake.Role):
+    global masterRoles
+
+    if [parent.id, child.id] in masterRoles:
+        inter.response.send_message(f"Role {parent.mention} already parents {child.mention}", ephemeral=True)
+        return
+
+    if [child.id, parent.id] in masterRoles:
+        inter.response.send_message(f"Role {child.mention} parents {parent.mention}! Doing this would cause an infinite loop! Please remove the parenting first.", ephemeral=True)
+        return
+
+    masterRoles.append([parent.id, child.id])
+    with open('config/parents.json', 'w') as f:
+        json.dump(masterRoles, f)
+    inter.response.send_message(f"Role {parent.mention} now parents {child.mention}", ephemeral=True)
+
+@bot.slash_command(name='remove_parent', guild_ids=guilds)
+@commands.has_permissions(manage_roles=True)
+async def remove_parent(inter, parent:disnake.Role, child:disnake.Role):
+    global masterRoles
+
+    if [parent.id, child.id] not in masterRoles:
+        inter.response.send_message(f"Role {parent.mention} does not parent {child.mention}", ephemeral=True)
+        return
+
+    masterRoles.remove([parent.id, child.id])
+    with open('config/parents.json', 'w') as f:
+        json.dump(masterRoles, f)
+    inter.response.send_message(f"Role {parent.mention} no longer parents {child.mention}", ephemeral=True)
 
 @bot.user_command(name='View Role Icons', guild_ids=guilds)
 async def view_roleicon_context(inter):
