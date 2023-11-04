@@ -11,16 +11,15 @@ intents.guilds = True
 intents.presences = True
 intents.members = True
 
-masterRoles = [
-]
+masterRoles: list = json.load(open('config/parents.json'))
 
 default_role = 1099102181606555699
 
-activity = disnake.Game(name="I'd like to see your Role Magement.")
+activity = disnake.Game(name="Managing Roles since 1999!")
 
 bot = commands.InteractionBot(intents=intents,
                    allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True), activity=activity)
-guilds = [770428394918641694, 1098819405321875571]
+guilds = [770428394918641694, 296802696243970049, 1098819405321875571]
 
 
 def getLang(inter, section, line):
@@ -50,6 +49,42 @@ def getLang(inter, section, line):
 @bot.user_command(name='View Roles', guild_ids=guilds)
 async def view_role_context(inter):
     await _roles(inter, type='Role', user=inter.target)
+
+@bot.slash_command(name='add_parent', guild_ids=guilds)
+@commands.has_permissions(manage_roles=True)
+async def add_parent(inter, parent:disnake.Role, child:disnake.Role):
+    global masterRoles
+
+    if [parent.id, child.id] in masterRoles:
+        inter.response.send_message(f"Role {parent.mention} already parents {child.mention}", ephemeral=True)
+        return
+
+    if [child.id, parent.id] in masterRoles:
+        inter.response.send_message(f"Role {child.mention} parents {parent.mention}! Doing this would cause an infinite loop! Please remove the parenting first.", ephemeral=True)
+        return
+
+    masterRoles.append([parent.id, child.id])
+    with open('config/parents.json', 'w') as f:
+        json.dump(masterRoles, f)
+    inter.response.send_message(f"Role {parent.mention} now parents {child.mention}", ephemeral=True)
+
+@bot.slash_command(name='remove_parent', guild_ids=guilds)
+@commands.has_permissions(manage_roles=True)
+async def remove_parent(inter, parent:disnake.Role, child:disnake.Role):
+    global masterRoles
+
+    if [parent.id, child.id] not in masterRoles:
+        inter.response.send_message(f"Role {parent.mention} does not parent {child.mention}", ephemeral=True)
+        return
+
+    masterRoles.remove([parent.id, child.id])
+    with open('config/parents.json', 'w') as f:
+        json.dump(masterRoles, f)
+    inter.response.send_message(f"Role {parent.mention} no longer parents {child.mention}", ephemeral=True)
+
+@bot.user_command(name='View Role Icons', guild_ids=guilds)
+async def view_roleicon_context(inter):
+    await _roles(inter, type='Icon', user=inter.target)
 
 @bot.slash_command(description='Allows you to manage your active roles, or view the roles of other users.', name='roles',
                    guild_ids=guilds)
@@ -273,7 +308,7 @@ async def removerole(inter, member: disnake.abc.User, role: disnake.abc.Role):
     await member.remove_roles(role, reason=f'Role removed by {inter.author} ({inter.author.id})')
 
 
-@bot.slash_command(description='Gives an icon to a user.', name='giveicon', guild_ids=guilds, aliases=['i'])
+@bot.slash_command(description='Gives an icon to a user.', name='giveicon', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def addroleicon(inter, member: disnake.abc.User, role: disnake.abc.Role):
     if role.name == '@everyone':
@@ -469,7 +504,6 @@ async def list_specific_role(inter, role):
 
 
 @bot.slash_command(name='store', description='Stores all your eligible roles & icons in your Roler Mobster Inventory')
-@commands.cooldown(1, 86400, commands.BucketType.user)
 async def store(inter):
     await dongulate(inter, user=inter.author)
 
@@ -477,12 +511,11 @@ async def store(inter):
 @bot.slash_command(name='dongulate', description='Adds all valid roles to a user.', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
 async def dongulate(inter, user: disnake.User):
+    global masterRoles
     await inter.response.defer()
     roleIDs, roleIconIDs = get_user_roles(0)
     roles_to_add = []
     roleIcons_to_add = []
-
-    addedRoles = []
 
     userRoles = user.roles
 
@@ -496,18 +529,17 @@ async def dongulate(inter, user: disnake.User):
         for i in masterRoles:
             pri, sec = i
             if pri == r.id:
-                print(pri, sec)
                 role = inter.guild.get_role(sec)
                 if role not in userRoles:
-                    userRoles.append(role)
+                    database_update('add', user.id, role=role.id)
 
         if r.id in roleIDs:
             roles_to_add.append(r)
-            addedRoles.append(r.id)
             database_update('add', user.id, role=r.id)
         if r.id in roleIconIDs:
             roleIcons_to_add.append(r)
             database_update('add', user.id, roleIcon=r.id)
+
 
     if dupeRole:
         roles_to_add.append(dupeRole)
