@@ -356,7 +356,7 @@ async def listall(inter, role: disnake.Role = None):
 
     await inter.response.defer()
 
-    conn = sqlite3.connect('roles.db')
+    conn = sqlite3.connect('config/roles.db')
     cur = conn.cursor()
 
     sql = '''SELECT * FROM roles'''
@@ -434,7 +434,7 @@ async def listall(inter, role: disnake.Role = None):
 
 async def list_specific_role(inter, role):
     await inter.response.defer()
-    conn = sqlite3.connect('roles.db')
+    conn = sqlite3.connect('config/roles.db')
     cur = conn.cursor()
 
     roleID = role.id
@@ -724,7 +724,7 @@ async def on_page_click(inter):
 
 
 def add_user_to_database(user):
-    conn = sqlite3.connect('roles.db')
+    conn = sqlite3.connect('config/roles.db')
     cur = conn.cursor()
 
     blank = json.dumps([])
@@ -738,7 +738,7 @@ def get_user_roles(user, skip=False):
     if user == 9:
         skip = True
 
-    conn = sqlite3.connect('roles.db')
+    conn = sqlite3.connect('config/roles.db')
     cur = conn.cursor()
 
     sql = '''SELECT role, roleicon FROM roles WHERE user IS ?'''
@@ -781,7 +781,7 @@ def get_user_roles(user, skip=False):
 
 
 def database_update(action, user, role=None, roleIcon=None):
-    conn = sqlite3.connect('roles.db')
+    conn = sqlite3.connect('config/roles.db')
     cur = conn.cursor()
 
     sql = '''SELECT role, roleicon FROM roles WHERE user IS ?'''
@@ -830,4 +830,4 @@ async def on_slash_command_error(ctx, error):
     print(error)
 
 
-bot.run(open('token.txt', 'r').read())
+bot.run(open('config/token.txt', 'r').read())
