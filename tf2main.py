@@ -31,7 +31,7 @@ masterRoles = [
     (983062659882680401, 983061892002086994),  # Cosmos Conqueror -> Stellar Sovereign
     (331630636299452446, 978000113786028164),   # Winner -> Compo Finalist
     (409552655623389185, 1169051040662945803),  # Rhythm Master -> Samurai Master
-    (409552655623389185, 1169051235278671963),  # Rhythm Master -> Coffee Master
+    (409552655623389185, 116905123527867196/home/bliv/PycharmProjects/carnivorouscarnival3),  # Rhythm Master -> Coffee Master
     (409552655623389185, 1169051488916611093),  # Rhythm Master -> Multitasker Master
     (409552655623389185, 1169051621586636891)  # Rhythm Master -> Conduction Master
 ]
