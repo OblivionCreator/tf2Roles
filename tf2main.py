@@ -150,10 +150,11 @@ async def _roles(inter, type, returnEmbed=False,
     true_roles_shortened = true_roles[(page - 1) * 25:(page * 25)]
     true_icons_shortened = true_icons[(page - 1) * 25:(page * 25)]
 
-    aList = []
 
     if not returnEmbed and not user:
         rarities = getLang(inter, 'Translation', 'RARITY_LIST').split(', ')
+
+        aList = []
 
         if len(true_roles) > 0:
             Menu1 = disnake.ui.Select()
@@ -211,10 +212,10 @@ async def _roles(inter, type, returnEmbed=False,
         roleStrList = f'{roleStrList}\n**({((page - 1) * 25) + 1}-{(((page - 1) * 25) + 1) + len(true_roles_shortened) - 1})**'
         iconStrList = f'{iconStrList}\n**({((page - 1) * 25) + 1}-{(((page - 1) * 25) + 1) + len(true_icons_shortened) - 1})**'
 
-        if (true_roles[-1] == true_roles_shortened[-1] and len(true_roles) > 25) or (true_icons[-1] == true_icons_shortened[-1] and len(true_icons) > 25):
+        if (len(true_roles) > 1 and (true_roles[-1] == true_roles_shortened[-1]) and len(true_roles) > 25) or (len(true_icons) > 1 and (true_icons[-1] == true_icons_shortened[-1] and len(true_icons) > 25)):
             pageDown = disnake.ui.Button(label='<-', custom_id=f'{shortType}_{page - 1}', style=disnake.ButtonStyle.blurple)
             aList.append(pageDown)
-        if (true_roles[0] == true_roles_shortened[0] and len(true_roles) > 25) or (true_icons[0] == true_icons_shortened[0] and len(true_icons) > 25):
+        if (len(true_roles) > 1 and (true_roles[0] == true_roles_shortened[0] and len(true_roles) > 25)) or (len(true_icons) > 1 and (true_icons[0] == true_icons_shortened[0] and len(true_icons) > 25)):
             pageUp = disnake.ui.Button(label='->', custom_id=f'{shortType}_{page + 1}', style=disnake.ButtonStyle.blurple)
             aList.append(pageUp)
 
@@ -826,17 +827,17 @@ def database_update(action, user, role=None, roleIcon=None):
     conn.commit()
 
 
-@bot.listen()
-async def on_slash_command_error(ctx, error):
-    if isinstance(error, disnake.ext.commands.MissingPermissions):
-        await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
-        return
-    elif isinstance(error, disnake.ext.commands.CommandOnCooldown):
-        await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_COOLDOWN'), ephemeral=True)
-        return
-    await ctx.send(
-        getLang(ctx, 'Translation', 'COMMAND_FAILED_UNKNOWN_ERROR').format(error))
-    print(error)
+# @bot.listen()
+# async def on_slash_command_error(ctx, error):
+#     if isinstance(error, disnake.ext.commands.MissingPermissions):
+#         await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
+#         return
+#     elif isinstance(error, disnake.ext.commands.CommandOnCooldown):
+#         await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_COOLDOWN'), ephemeral=True)
+#         return
+#     await ctx.send(
+#         getLang(ctx, 'Translation', 'COMMAND_FAILED_UNKNOWN_ERROR').format(error))
+#     print(error)
 
 @tasks.loop(minutes=5)
 async def changeStatus():
