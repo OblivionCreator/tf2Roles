@@ -94,7 +94,7 @@ async def roles(inter, member: disnake.Member = None, page: int = 1):
 
 async def _roles(inter, type, returnEmbed=False,
                  user=False, page=1,
-                 defer=True):  # Lists a players' roles & role icons and allows them to choose between them.
+                 defer=True, show_header=True):  # Lists a players' roles & role icons and allows them to choose between them.
 
     if page < 1:
         page = 1
@@ -150,11 +150,11 @@ async def _roles(inter, type, returnEmbed=False,
     true_roles_shortened = true_roles[(page - 1) * 25:(page * 25)]
     true_icons_shortened = true_icons[(page - 1) * 25:(page * 25)]
 
+    aList = []
 
     if not returnEmbed and not user:
         rarities = getLang(inter, 'Translation', 'RARITY_LIST').split(', ')
 
-        aList = []
 
         if len(true_roles) > 0:
             Menu1 = disnake.ui.Select()
@@ -231,7 +231,10 @@ async def _roles(inter, type, returnEmbed=False,
         embTitle = getLang(inter, section='Translation', line='ROLES_LIST_USER').format(user.name, true_length,
                                                                                         type_plural)
     else:
-        embTitle = f"You currently own {true_length} Roles and {true_length_2} Role Icons"
+        if show_header:
+            embTitle = f"You currently own {true_length} Roles and {true_length_2} Role Icons"
+        else:
+            embTitle = '⠀'
 
     embed = disnake.Embed(title=embTitle, description="", color=0xD8B400)
     embed.add_field(name="Roles", value=roleStrList, inline=True)
@@ -608,9 +611,20 @@ async def vw_bl(inter, page:int=1):
 @bot.slash_command(name='show', description='Shows off your role inventory publicly!', guild_ids=guilds)
 async def showoff(inter):
     await inter.response.defer()
+
+    # get role list
+    roles, icons = get_user_roles(inter.author.id)
+    page = 1
+    embeds = []
+    role_count = len(roles)
+    icon_count = len(icons)
+    while role_count > 0 or icon_count > 0:
+        embeds.append(await _roles(inter, 'Role', returnEmbed=True, user=inter.author.id, page=page))
+        role_count -= 25
+        icon_count -= 25
+        page += 1
     user = inter.author
-    embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user)
-    await inter.edit_original_message(embeds=[embed1])
+    await inter.edit_original_message(embeds=embeds)
 
 @bot.slash_command(name='assignicon', description='Adds or removes a role from the Dongulatable roles.',
                    guild_ids=guilds)
