@@ -212,10 +212,10 @@ async def _roles(inter, type, returnEmbed=False,
         roleStrList = f'{roleStrList}\n**({((page - 1) * 25) + 1}-{(((page - 1) * 25) + 1) + len(true_roles_shortened) - 1})**'
         iconStrList = f'{iconStrList}\n**({((page - 1) * 25) + 1}-{(((page - 1) * 25) + 1) + len(true_icons_shortened) - 1})**'
 
-        if (len(true_roles) > 1 and (true_roles[-1] == true_roles_shortened[-1]) and len(true_roles) > 25) or (len(true_icons) > 1 and (true_icons[-1] == true_icons_shortened[-1] and len(true_icons) > 25)):
+        if (len(true_roles) > 1 and len(true_roles_shortened) > 1 and (true_roles[-1] == true_roles_shortened[-1]) and len(true_roles) > 25) or (len(true_icons) > 25 and len(true_icons_shortened) > 1 and (true_icons[-1] == true_icons_shortened[-1])):
             pageDown = disnake.ui.Button(label='<-', custom_id=f'{shortType}_{page - 1}', style=disnake.ButtonStyle.blurple)
             aList.append(pageDown)
-        if (len(true_roles) > 1 and (true_roles[0] == true_roles_shortened[0] and len(true_roles) > 25)) or (len(true_icons) > 1 and (true_icons[0] == true_icons_shortened[0] and len(true_icons) > 25)):
+        if (len(true_roles) > 1 and len(true_roles_shortened) > 1 and (true_roles[0] == true_roles_shortened[0] and len(true_roles) > 25)) or (len(true_icons) > 25 and len(true_icons_shortened) > 1 and (true_icons[0] == true_icons_shortened[0])):
             pageUp = disnake.ui.Button(label='->', custom_id=f'{shortType}_{page + 1}', style=disnake.ButtonStyle.blurple)
             aList.append(pageUp)
 
