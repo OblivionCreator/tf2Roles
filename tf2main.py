@@ -150,9 +150,10 @@ async def _roles(inter, type, returnEmbed=False,
     true_roles_shortened = true_roles[(page - 1) * 25:(page * 25)]
     true_icons_shortened = true_icons[(page - 1) * 25:(page * 25)]
 
+    aList = []
+
     if not returnEmbed and not user:
         rarities = getLang(inter, 'Translation', 'RARITY_LIST').split(', ')
-        aList = []
 
         if len(true_roles) > 0:
             Menu1 = disnake.ui.Select()
@@ -188,6 +189,7 @@ async def _roles(inter, type, returnEmbed=False,
     iconStrList = ''
     PageDown = None
     PageUp = None
+
 
     true_length = len(true_roles)
     true_length_2 = len(true_icons)
