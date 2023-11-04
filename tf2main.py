@@ -100,7 +100,10 @@ async def _roles(inter, type, returnEmbed=False,
         page = 1
 
     if not returnEmbed and defer:
-        await inter.response.defer(ephemeral=True)
+        try:
+            await inter.response.defer(ephemeral=True)
+        except Exception:
+            pass
 
     if user:
 
@@ -156,7 +159,7 @@ async def _roles(inter, type, returnEmbed=False,
         rarities = getLang(inter, 'Translation', 'RARITY_LIST').split(', ')
 
 
-        if len(true_roles) > 0:
+        if len(true_roles_shortened) > 0:
             Menu1 = disnake.ui.Select()
             role_options = []
             for r in true_roles_shortened:
@@ -171,7 +174,7 @@ async def _roles(inter, type, returnEmbed=False,
             Menu1.custom_id = 'role_select'
             aList.append(Menu1)
 
-        if len(true_icons) > 0:
+        if len(true_icons_shortened) > 0:
             Menu2 = disnake.ui.Select()
             Menu2.placeholder = "Select a Role Icon!"
             icon_options = []
