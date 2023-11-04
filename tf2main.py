@@ -3,7 +3,7 @@ import json
 import sqlite3
 import random
 import disnake
-from disnake.ext import commands
+from disnake.ext import commands, tasks
 from configparser import ConfigParser
 
 intents = disnake.Intents.default()
@@ -13,13 +13,13 @@ intents.members = True
 
 masterRoles: list = json.load(open('config/parents.json'))
 
-default_role = 831865797545951232
+default_role = 1099102181606555699
 
 activity = disnake.Game(name="Managing Roles since 1999!")
 
 bot = commands.InteractionBot(intents=intents,
                    allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True), activity=activity)
-guilds = [770428394918641694, 296802696243970049]
+guilds = [770428394918641694, 296802696243970049, 1098819405321875571]
 
 
 def getLang(inter, section, line):
@@ -28,7 +28,6 @@ def getLang(inter, section, line):
     languages = {
         'en-US': "translation/lang_en.ini",
         'en-GB': "translation/lang_en.ini",
-        'ko': "translation/lang_ko.ini"
     }
 
     if language in languages:
@@ -87,16 +86,10 @@ async def remove_parent(inter, parent:disnake.Role, child:disnake.Role):
 async def view_roleicon_context(inter):
     await _roles(inter, type='Icon', user=inter.target)
 
-
-@bot.slash_command(description='Allows you to manage your active role, or view the roles of other users.', name='roles',
+@bot.slash_command(description='Allows you to manage your active roles, or view the roles of other users.', name='roles',
                    guild_ids=guilds)
 async def roles(inter, member: disnake.Member = None, page: int = 1):
     await _roles(inter, type='Role', user=member, page=page)
-
-@bot.slash_command(description='Allows you to manage your active role icon, or view the role icons of other users.',
-                   name='icons', guild_ids=guilds)
-async def roleicons(inter, member: disnake.Member = None, page: int = 1):
-    await _roles(inter, type='Icon', user=member, page=page)
 
 
 async def _roles(inter, type, returnEmbed=False,
@@ -120,86 +113,106 @@ async def _roles(inter, type, returnEmbed=False,
     else:
         id = inter.author.id
     roles, roleIcons = get_user_roles(id)
-
     guild = inter.guild
 
-    true_items = []
+    true_roles = []
+    true_icons = []
+    shortType = 'ro'
+    role_def = guild.get_role(default_role)
+    if role_def:
+        true_icons.append(guild.get_role(default_role))
 
-    shortType = ''
-
-    if type == 'Role':
-        itemList = roles
-        shortType = 'ro'
-    else:
-        itemList = roleIcons
-        shortType = 'ri'
-        true_items.append(guild.get_role(default_role))
-
-    for r in itemList:
+    for r in roles:
         try:
             role = guild.get_role(r)
             if role is None:
                 database_update('remove', id, role=r)
             else:
-                true_items.append(role)
+                true_roles.append(role)
         except Exception as e:
             print(e)
 
-    if page - 1 > (len(true_items)) / 25:
+    for r in roleIcons:
+        try:
+            role = guild.get_role(r)
+            if role is None:
+                database_update('remove', id, roleIcon=r)
+            else:
+                true_icons.append(role)
+        except Exception as e:
+            print(e)
+
+    if page - 1 > (len(true_roles)) / 25 or page -1 > (len(true_roles)) / 25:
         page = 1
 
-    true_items.sort(reverse=True)
-    
-    true_items_shortened = true_items[(page - 1) * 25:(page * 25)]
-
-    aList = []
+    true_roles.sort(reverse=True)
+    true_icons.sort(reverse=True)
+    true_roles_shortened = true_roles[(page - 1) * 25:(page * 25)]
+    true_icons_shortened = true_icons[(page - 1) * 25:(page * 25)]
 
     if not returnEmbed and not user:
-
         rarities = getLang(inter, 'Translation', 'RARITY_LIST').split(', ')
+        aList = []
 
-        Menu = disnake.ui.Select()
-        options = []
-        for r in true_items_shortened:
-            print(r.name, r.id)
-            if r.id == default_role:
-                name = getLang(inter, 'Translation', 'NO_ICON')
-                desc = (getLang(inter, 'Translation', 'NO_ICON_DESC'))
-                temp = disnake.SelectOption(label=name, value=f'{shortType}_{r.id}', description=desc)
-            else:
+        if len(true_roles) > 0:
+            Menu1 = disnake.ui.Select()
+            role_options = []
+            for r in true_roles_shortened:
                 random.seed(f"{r.name}{inter.author.id}")
                 quality = random.choice(rarities)
                 level = random.randint(0, 100)
-                name = r.name
-                temp = disnake.SelectOption(label=r.name, value=f'{shortType}_{r.id}',
-                                            description=getLang(inter, 'Translation', 'ITEM_RARITY').format(level, quality,
-                                                                                                            r.name))
-            options.append(temp)
-        Menu.options = options
-        Menu.custom_id = 'role_select'
-        aList.append(Menu)
-    else:
-        Menu = None
+                temp = disnake.SelectOption(label=r.name, value=f'ro_{r.id}',
+                                                description=getLang(inter, 'Translation', 'ITEM_RARITY').format(level, quality,r.name))
+                role_options.append(temp)
+            Menu1.options = role_options
+            Menu1.placeholder = "Select a Role!"
+            Menu1.custom_id = 'role_select'
+            aList.append(Menu1)
+
+        if len(true_icons) > 0:
+            Menu2 = disnake.ui.Select()
+            Menu2.placeholder = "Select a Role Icon!"
+            icon_options = []
+            for r in true_icons_shortened:
+                random.seed(f"{r.name}{inter.author.id}")
+                quality = random.choice(rarities)
+                level = random.randint(0, 100)
+                temp = disnake.SelectOption(label=r.name, value=f'ro_{r.id}',
+                                                description=getLang(inter, 'Translation', 'ITEM_RARITY').format(level, quality,r.name))
+                icon_options.append(temp)
+            Menu2.options = icon_options
+            Menu2.custom_id = 'icon_select'
+            aList.append(Menu2)
 
     roleStrList = ''
+    iconStrList = ''
     PageDown = None
     PageUp = None
 
-    true_length = len(true_items)
-    if len(true_items) > 0:
-        if true_items[0].id == default_role:
-            true_length = len(true_items)-1
+    true_length = len(true_roles)
+    true_length_2 = len(true_icons)
+    if len(true_icons) > 0:
+        if true_icons[0] is None:
+            true_icons.pop(0)
+        elif true_icons[0].id == default_role:
+            true_length_2 = len(true_icons)-1
 
-    for i in true_items_shortened:
-        if i.id != default_role:
-            roleStrList = f'{roleStrList}\n{i.mention}'
-    if len(true_items) > len(true_items_shortened):
-        roleStrList = f'{roleStrList}\n**({((page - 1) * 25) + 1}-{(((page - 1) * 25) + 1) + len(true_items_shortened) - 1})**'
+    if len(true_icons) == 1 or id == 9:
+        true_icons = true_icons[1:]
 
-        if true_items[-1] == true_items_shortened[-1] and len(true_items) > 25:
+    for r in true_roles_shortened:
+        roleStrList = f'{roleStrList}\n{r.mention}'
+    for i in true_icons_shortened:
+        iconStrList = f'{iconStrList}\n{i.mention}'
+
+    if len(true_roles) > len(true_roles_shortened) or len(true_icons) > len(true_icons_shortened):
+        roleStrList = f'{roleStrList}\n**({((page - 1) * 25) + 1}-{(((page - 1) * 25) + 1) + len(true_roles_shortened) - 1})**'
+        iconStrList = f'{iconStrList}\n**({((page - 1) * 25) + 1}-{(((page - 1) * 25) + 1) + len(true_icons_shortened) - 1})**'
+
+        if (true_roles[-1] == true_roles_shortened[-1] and len(true_roles) > 25) or (true_icons[-1] == true_icons_shortened[-1] and len(true_icons) > 25):
             pageDown = disnake.ui.Button(label='<-', custom_id=f'{shortType}_{page - 1}', style=disnake.ButtonStyle.blurple)
             aList.append(pageDown)
-        if true_items[0] == true_items_shortened[0] and len(true_items) > 25:
+        if (true_roles[0] == true_roles_shortened[0] and len(true_roles) > 25) or (true_icons[0] == true_icons_shortened[0] and len(true_icons) > 25):
             pageUp = disnake.ui.Button(label='->', custom_id=f'{shortType}_{page + 1}', style=disnake.ButtonStyle.blurple)
             aList.append(pageUp)
 
@@ -215,26 +228,26 @@ async def _roles(inter, type, returnEmbed=False,
         embTitle = getLang(inter, section='Translation', line='ROLES_LIST_USER').format(user.name, true_length,
                                                                                         type_plural)
     else:
-        embTitle = getLang(inter, section='Translation', line='ROLES_LIST_INVOKER').format(true_length, type_plural)
+        embTitle = f"You currently own {true_length} Roles and {true_length_2} Role Icons"
 
-    embed = disnake.Embed(title=embTitle, description=roleStrList, color=0xD8B400)
+    embed = disnake.Embed(title=embTitle, description="", color=0xD8B400)
+    embed.add_field(name="Roles", value=roleStrList, inline=True)
+    embed.add_field(name="Role Icons", value=iconStrList, inline=True)
     if not returnEmbed:
-        embed.set_footer(text=getLang(inter, section='Translation', line='ROLE_FOOTER_INFO').format(
-            getLang(inter, section='Translation', line=f'{type.upper()}_PLURAL')))
-    if len(true_items) != 0 and not returnEmbed and not user:
+        embed.set_footer(text="Roles and Role Icons are awarded for specific achievements.")
+    if len(true_roles) != 0 and not returnEmbed and not user:
         embed.set_footer(text=getLang(inter, section='Translation', line='ROLE_FOOTER_DROPDOWN').format(
             getLang(inter, section='Translation', line=f'{type.upper()}')))
 
     if returnEmbed:
         return embed
-    elif len(true_items) > 0 and not user:
-        print(aList)
+    elif len(true_roles) > 0 and not user:
         message = await inter.edit_original_message(components=aList, embed=embed)
     else:
         message = await inter.edit_original_message(embed=embed)
 
 
-@bot.slash_command(description='Assigns a role to a user.', name='giverole', guild_ids=guilds)
+@bot.slash_command(description='Assigns a role to a user.', name='giverole', guild_ids=guilds, aliases=['r'])
 @commands.has_permissions(manage_roles=True)
 async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
     global masterRoles
@@ -270,17 +283,6 @@ async def addrole(inter, member: disnake.abc.User, role: disnake.abc.Role):
     for x in roles_to_add:
         database_update("add", user=member.id, role=x)
 
-# @bot.slash_command(description='Updates your Roles & Assigns any Child Roles', name='update')
-# async def update_roles(inter):
-#     global masterRoles
-#
-#     user_roles = get_user_roles(inter.author.id)
-#
-#     for i in user_roles:
-#         for ix in masterRoles:
-#             pri, sec = ix
-#             if pri == i:
-#                 roles_to_add.append(sec)
 
 @bot.slash_command(description='Removes a role from a user.', name='removerole', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
@@ -597,8 +599,7 @@ async def vw_bl(inter, page:int=1):
     user = 9
     await inter.response.defer()
     embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user, page=page)
-    embed2 = await _roles(inter, 'Icon', returnEmbed=True, user=user, page=page)
-    await inter.edit_original_message(embeds=[embed1, embed2])
+    await inter.edit_original_message(embeds=[embed1])
 
 
 @bot.slash_command(name='show', description='Shows off your role inventory publicly!', guild_ids=guilds)
@@ -606,9 +607,7 @@ async def showoff(inter):
     await inter.response.defer()
     user = inter.author
     embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user)
-    embed2 = await _roles(inter, 'Icon', returnEmbed=True, user=user)
-    await inter.edit_original_message(embeds=[embed1, embed2])
-
+    await inter.edit_original_message(embeds=[embed1])
 
 @bot.slash_command(name='assignicon', description='Adds or removes a role from the Dongulatable roles.',
                    guild_ids=guilds)
@@ -635,7 +634,7 @@ async def assign_role_icon(inter, role: disnake.Role):
 @bot.listen("on_dropdown")
 async def on_role_select(inter):
     await inter.response.defer(ephemeral=True)
-    if inter.data.custom_id == 'role_select':
+    if inter.data.custom_id == 'role_select' or inter.data.custom_id == 'icon_select':
         raw_id = inter.data.values[0]
         role_id = int(raw_id[3:])
         type = raw_id[:2]
@@ -676,7 +675,7 @@ async def on_role_select(inter):
     try:
         await member.add_roles(role, reason=f'Role Assignment by {member.name}')
     except disnake.Forbidden as e:
-        await inter.response.send_message(
+        await inter.followup.send(
             getLang(inter, 'Translation', 'EQUIP_ROLE_FAILED_ERROR_GENERIC'),
             ephemeral=True)
         return
@@ -825,7 +824,7 @@ def database_update(action, user, role=None, roleIcon=None):
     conn.commit()
 
 
-#@bot.listen()
+@bot.listen()
 async def on_slash_command_error(ctx, error):
     if isinstance(error, disnake.ext.commands.MissingPermissions):
         await ctx.send(getLang(ctx, 'Translation', 'COMMAND_FAILED_BAD_PERMISSIONS'), ephemeral=True)
@@ -837,5 +836,21 @@ async def on_slash_command_error(ctx, error):
         getLang(ctx, 'Translation', 'COMMAND_FAILED_UNKNOWN_ERROR').format(error))
     print(error)
 
+@tasks.loop(minutes=5)
+async def changeStatus():
+    await statusChanger()
+
+async def statusChanger():
+    status = disnake.Status.online
+
+    from datetime import date
+
+    flavor = ["Obsessed with roles, and abhors Chaos.", "Tasque Manager blocks the way!", "Tasque Manager makes a list of her roles for the next year. She only has one role.", "Tasque Manager is writing \"manage tasks\" next to every entry in her daily planner.", "Tasque Manager is straightening her whip with a hair straightener.", "Tasque Manager is making herself take priority over the roles.", "Smells like live wiring"]
+
+    await bot.change_presence(activity=disnake.Game(random.choice(flavor)))
+
+@bot.event
+async def on_ready():
+    changeStatus.start()
 
 bot.run(open('config/token.txt', 'r').read())
