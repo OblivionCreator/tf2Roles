@@ -128,6 +128,8 @@ async def _roles(inter:disnake.Interaction, role_type, returnEmbed=False,
         default_role = 831865797545951232
     elif inter.guild.id == 1098819405321875571:
         default_role = 1099102181606555699
+    else:
+        pass
 
     role_def = guild.get_role(default_role)
     if role_def:
