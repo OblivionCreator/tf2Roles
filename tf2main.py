@@ -92,7 +92,7 @@ async def roles(inter, member: disnake.Member = None, page: int = 1):
     await _roles(inter, type='Role', user=member, page=page)
 
 
-async def _roles(inter, type, returnEmbed=False,
+async def _roles(inter:disnake.Interaction, type, returnEmbed=False,
                  user=False, page=1,
                  defer=True, show_header=True):  # Lists a players' roles & role icons and allows them to choose between them.
 
@@ -121,9 +121,16 @@ async def _roles(inter, type, returnEmbed=False,
     true_roles = []
     true_icons = []
     shortType = 'ro'
-    role_def = guild.get_role(default_role)
+    n_default_role = 0
+
+    if inter.guild.id == 296802696243970049:
+        n_default_role = 831865797545951232
+    elif inter.guild.id == 1098819405321875571:
+        n_default_role = 0
+
+    role_def = guild.get_role(n_default_role)
     if role_def:
-        true_icons.append(guild.get_role(default_role))
+        true_icons.append(guild.get_role(n_default_role))
 
     for r in roles:
         try:
