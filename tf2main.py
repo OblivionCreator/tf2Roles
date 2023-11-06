@@ -121,16 +121,15 @@ async def _roles(inter:disnake.Interaction, type, returnEmbed=False,
     true_roles = []
     true_icons = []
     shortType = 'ro'
-    n_default_role = 0
 
     if inter.guild.id == 296802696243970049:
-        n_default_role = 831865797545951232
+        default_role = 831865797545951232
     elif inter.guild.id == 1098819405321875571:
-        n_default_role = 0
+        default_role = 1099102181606555699
 
-    role_def = guild.get_role(n_default_role)
+    role_def = guild.get_role(default_role)
     if role_def:
-        true_icons.append(guild.get_role(n_default_role))
+        true_icons.append(guild.get_role(default_role))
 
     for r in roles:
         try:
