@@ -48,7 +48,7 @@ def getLang(inter, section, line):
 
 @bot.user_command(name='View Roles', guild_ids=guilds)
 async def view_role_context(inter):
-    await _roles(inter, type='Role', user=inter.target)
+    await _roles(inter, role_type='Role', user=inter.target)
 
 @bot.slash_command(name='add_parent', guild_ids=guilds)
 @commands.has_permissions(manage_roles=True)
@@ -84,17 +84,19 @@ async def remove_parent(inter, parent:disnake.Role, child:disnake.Role):
 
 @bot.user_command(name='View Role Icons', guild_ids=guilds)
 async def view_roleicon_context(inter):
-    await _roles(inter, type='Icon', user=inter.target)
+    await _roles(inter, role_type='Icon', user=inter.target)
 
 @bot.slash_command(description='Allows you to manage your active roles, or view the roles of other users.', name='roles',
                    guild_ids=guilds)
 async def roles(inter, member: disnake.Member = None, page: int = 1):
-    await _roles(inter, type='Role', user=member, page=page)
+    await _roles(inter, role_type='Role', user=member, page=page)
 
 
-async def _roles(inter:disnake.Interaction, type, returnEmbed=False,
+async def _roles(inter:disnake.Interaction, role_type, returnEmbed=False,
                  user=False, page=1,
                  defer=True, show_header=True):  # Lists a players' roles & role icons and allows them to choose between them.
+
+    global default_role
 
     if page < 1:
         page = 1
@@ -217,7 +219,7 @@ async def _roles(inter:disnake.Interaction, type, returnEmbed=False,
     for i in true_icons_shortened:
         iconStrList = f'{iconStrList}\n{i.mention}'
 
-    if len(true_roles) > len(true_roles_shortened) or len(true_icons) > len(true_icons_shortened):
+    if (len(true_roles) > len(true_roles_shortened) or len(true_icons) > len(true_icons_shortened)) and user == inter.author.id:
         roleStrList = f'{roleStrList}\n**({((page - 1) * 25) + 1}-{(((page - 1) * 25) + 1) + len(true_roles_shortened) - 1})**'
         iconStrList = f'{iconStrList}\n**({((page - 1) * 25) + 1}-{(((page - 1) * 25) + 1) + len(true_icons_shortened) - 1})**'
 
@@ -229,9 +231,9 @@ async def _roles(inter:disnake.Interaction, type, returnEmbed=False,
             aList.append(pageUp)
 
     if true_length != 1:
-        type_plural = getLang(inter, section='Translation', line=f'{type.upper()}_PLURAL')
+        type_plural = getLang(inter, section='Translation', line=f'{role_type.upper()}_PLURAL')
     else:
-        type_plural = getLang(inter, section='Translation', line=f'{type.upper()}')
+        type_plural = getLang(inter, section='Translation', line=f'{role_type.upper()}')
 
     if id == 9:
         embTitle = getLang(inter, section='Translation', line='ROLES_LIST_BLACKLIST').format(true_length,
@@ -252,15 +254,12 @@ async def _roles(inter:disnake.Interaction, type, returnEmbed=False,
         embed.set_footer(text="Roles and Role Icons are awarded for specific achievements.")
     if len(true_roles) != 0 and not returnEmbed and not user:
         embed.set_footer(text=getLang(inter, section='Translation', line='ROLE_FOOTER_DROPDOWN').format(
-            getLang(inter, section='Translation', line=f'{type.upper()}')))
+            getLang(inter, section='Translation', line=f'{role_type.upper()}')))
 
     if returnEmbed:
-        return embed
-    elif len(true_roles) > 0 and not user:
-        message = await inter.edit_original_message(components=aList, embed=embed)
+        return embed, aList
     else:
-        message = await inter.edit_original_message(embed=embed)
-
+        message = await inter.edit_original_message(components=aList, embed=embed)
 
 @bot.slash_command(description='Assigns a role to a user.', name='giverole', guild_ids=guilds, aliases=['r'])
 @commands.has_permissions(manage_roles=True)
@@ -613,8 +612,8 @@ async def assign_role(inter, role: disnake.Role):
 async def vw_bl(inter, page:int=1):
     user = 9
     await inter.response.defer()
-    embed1 = await _roles(inter, 'Role', returnEmbed=True, user=user, page=page)
-    await inter.edit_original_message(embeds=[embed1])
+    embed1, components = await _roles(inter, 'Role', returnEmbed=True, user=user, page=page)
+    await inter.edit_original_message(embeds=[embed1], components=components)
 
 
 @bot.slash_command(name='show', description='Shows off your role inventory publicly!', guild_ids=guilds)
@@ -628,7 +627,8 @@ async def showoff(inter):
     role_count = len(roles)
     icon_count = len(icons)
     while role_count > 0 or icon_count > 0:
-        embeds.append(await _roles(inter, 'Role', returnEmbed=True, user=inter.author.id, page=page))
+        temp1, temp2 = await _roles(inter, 'Role', returnEmbed=True, user=inter.author.id, page=page)
+        embeds.append(temp1)
         role_count -= 25
         icon_count -= 25
         page += 1
@@ -665,7 +665,7 @@ async def on_role_select(inter):
         role_id = int(raw_id[3:])
         type = raw_id[:2]
 
-        if type == 'ro':
+        if inter.data.custom_id == 'role_select':
             type = 'role'
         else:
             type = 'roleIcon'
@@ -687,6 +687,8 @@ async def on_role_select(inter):
     for r in true_roles:
         if r in memberRoleIDs:
             roleList.append(inter.guild.get_role(r))
+
+    roleList.append(role)
 
     if role_id != default_role and role in roleList:
         try:
@@ -750,10 +752,10 @@ async def on_page_click(inter):
     custom_id = inter.data.custom_id
     if custom_id[0:2] == 'ro':
         longvariablethatdoesnothing, pageNo = custom_id.split("_")
-        await _roles(inter, type='Role', page=int(pageNo))
+        await _roles(inter, role_type='Role', page=int(pageNo))
         if custom_id[0:2] == 'ri':
             longvariablethatdoesnothing, pageNo = custom_id.split("_")
-            await _roles(inter, type='Icon', page=int(pageNo))
+            await _roles(inter, role_type='Icon', page=int(pageNo))
 
 
 def add_user_to_database(user):
