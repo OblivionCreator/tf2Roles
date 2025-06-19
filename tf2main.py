@@ -39,7 +39,7 @@ activity = disnake.Game(name="Managing Roles since 1999!")
 bot = commands.InteractionBot(intents=intents,
                               allowed_mentions=disnake.AllowedMentions(everyone=False, users=True, roles=False,
                                                                        replied_user=True), activity=activity)
-guilds = [770428394918641694, 296802696243970049, 1098819405321875571]
+guilds = [770428394918641694, 296802696243970049, 1098819405321875571, 756193219737288836]
 
 
 def getLang(inter, section, line):
